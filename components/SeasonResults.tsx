@@ -299,7 +299,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
                 <div className="text-4xl mb-2">🥇</div>
                 <div className="font-bold text-lg text-gray-900 dark:text-white">1st Place</div>
                 <div className="text-gray-600 dark:text-gray-400 mt-2">{rankings[0].player_name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[0].points} points</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[0].damage_points} damage points</div>
               </div>
             )}
             {rankings[1] && (
