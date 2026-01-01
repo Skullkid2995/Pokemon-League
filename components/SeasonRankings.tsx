@@ -45,7 +45,6 @@ export default async function SeasonRankings({ seasonId, compact = false }: Seas
         playerStatsMap.set(player1Id, {
           player_id: player1Id,
           player_name: getDisplayName(game.player1),
-          player: game.player1,
           wins: 0,
           losses: 0,
           total_games: 0,
@@ -57,7 +56,6 @@ export default async function SeasonRankings({ seasonId, compact = false }: Seas
         playerStatsMap.set(player2Id, {
           player_id: player2Id,
           player_name: getDisplayName(game.player2),
-          player: game.player2,
           wins: 0,
           losses: 0,
           total_games: 0,
