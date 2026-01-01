@@ -16,12 +16,7 @@ export default function DeleteGameButton({ gameId, seasonId, gameStatus }: Delet
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    // Only allow deletion of completed games
-    if (gameStatus !== 'completed') {
-      setError('Only completed games can be deleted');
-      return;
-    }
-
+    // Allow deletion of scheduled or completed games (super admin only)
     if (!confirm('Are you sure you want to delete this game? This action will be logged and cannot be undone.')) {
       return;
     }
@@ -42,11 +37,6 @@ export default function DeleteGameButton({ gameId, seasonId, gameStatus }: Delet
       setLoading(false);
     }
   };
-
-  // Only show delete button for completed games
-  if (gameStatus !== 'completed') {
-    return null;
-  }
 
   return (
     <>

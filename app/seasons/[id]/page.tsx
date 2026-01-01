@@ -133,7 +133,7 @@ export default function SeasonDetailPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <Link
           href="/seasons"
@@ -142,21 +142,21 @@ export default function SeasonDetailPage() {
           ← Back to Seasons
         </Link>
 
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">{season.name}</h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{season.name}</h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
               {new Date(season.start_date).toLocaleDateString()} - {new Date(season.end_date).toLocaleDateString()} ({season.year})
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             {currentUserRole === 'super_admin' && season.status === 'active' && (
               <CloseSeasonButton seasonId={season.id} />
             )}
             {currentUserRole === 'super_admin' && season.status === 'active' && (
               <Link
                 href={`/seasons/${season.id}/games/new`}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
               >
                 Add Game
               </Link>
@@ -164,7 +164,7 @@ export default function SeasonDetailPage() {
             {season.status === 'completed' && (
               <Link
                 href={`/seasons/${season.id}/results`}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
               >
                 View Results
               </Link>
@@ -193,44 +193,24 @@ export default function SeasonDetailPage() {
         </div>
 
         {games && games.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Date & Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Players
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Score
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Status
-                  </th>
-                  {currentUserRole === 'super_admin' && (
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {games.map((game: any) => {
-                  const player1 = game.player1;
-                  const player2 = game.player2;
-                  const isCompleted = game.status === 'completed';
-                  const rowTextColor = isCompleted 
-                    ? 'text-gray-600 dark:text-gray-400' 
-                    : 'text-gray-900 dark:text-white';
-                  
-                  return (
-                    <tr 
-                      key={game.id} 
-                      className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${isCompleted ? 'opacity-75' : ''}`}
-                    >
-                      <td className={`px-6 py-4 whitespace-nowrap ${rowTextColor}`}>
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {games.map((game: any) => {
+                const player1 = game.player1;
+                const player2 = game.player2;
+                const isCompleted = game.status === 'completed';
+                const rowTextColor = isCompleted 
+                  ? 'text-gray-600 dark:text-gray-400' 
+                  : 'text-gray-900 dark:text-white';
+                
+                return (
+                  <div 
+                    key={game.id} 
+                    className={`bg-white dark:bg-gray-800 rounded-lg shadow p-4 ${isCompleted ? 'opacity-75' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className={rowTextColor}>
                         <div className="text-sm font-medium">
                           {new Date(game.game_date).toLocaleDateString()}
                         </div>
@@ -242,54 +222,158 @@ export default function SeasonDetailPage() {
                             })}
                           </div>
                         )}
-                      </td>
-                      <td className={`px-6 py-4 ${rowTextColor}`}>
-                        <div className="text-sm">
-                          {getDisplayName(player1)} vs {getDisplayName(player2)}
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
+                          game.status
+                        )}`}
+                      >
+                        {game.status}
+                      </span>
+                    </div>
+                    <div className={`mb-3 ${rowTextColor}`}>
+                      <div className="text-sm font-semibold">
+                        {getDisplayName(player1)} vs {getDisplayName(player2)}
+                      </div>
+                    </div>
+                    <div className={`mb-3 ${rowTextColor}`}>
+                      {game.status === 'completed' && game.winner_id ? (
+                        <div className="text-sm font-semibold">
+                          Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
                         </div>
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-center ${rowTextColor}`}>
-                        {game.status === 'completed' && game.winner_id ? (
-                          <div className="text-sm font-semibold">
-                            Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
-                          </div>
-                        ) : (
-                          <div className="text-sm">-</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
-                            game.status
-                          )}`}
-                        >
-                          {game.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {currentUserRole === 'super_admin' && (
-                          <div className="flex justify-end gap-4">
-                            {game.status === 'scheduled' && season.status !== 'completed' ? (
-                              <Link
-                                href={`/seasons/${season.id}/games/${game.id}/save`}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                              >
-                                Save Game
-                              </Link>
-                            ) : null}
-                            {/* Only super admins can delete completed games */}
-                            {game.status === 'completed' && (
+                      ) : (
+                        <div className="text-sm">No score yet</div>
+                      )}
+                    </div>
+                    {currentUserRole === 'super_admin' && (
+                      <div className="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        {game.status === 'scheduled' && season.status !== 'completed' && (
+                          <>
+                            <Link
+                              href={`/seasons/${season.id}/games/${game.id}/save`}
+                              className="text-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium py-2 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition"
+                            >
+                              Save Game
+                            </Link>
+                            <div className="flex justify-center">
                               <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                            )}
+                            </div>
+                          </>
+                        )}
+                        {game.status === 'completed' && (
+                          <div className="flex justify-center">
+                            <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
                           </div>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Date & Time
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Players
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    {currentUserRole === 'super_admin' && (
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {games.map((game: any) => {
+                    const player1 = game.player1;
+                    const player2 = game.player2;
+                    const isCompleted = game.status === 'completed';
+                    const rowTextColor = isCompleted 
+                      ? 'text-gray-600 dark:text-gray-400' 
+                      : 'text-gray-900 dark:text-white';
+                    
+                    return (
+                      <tr 
+                        key={game.id} 
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${isCompleted ? 'opacity-75' : ''}`}
+                      >
+                        <td className={`px-6 py-4 whitespace-nowrap ${rowTextColor}`}>
+                          <div className="text-sm font-medium">
+                            {new Date(game.game_date).toLocaleDateString()}
+                          </div>
+                          {game.game_time && (
+                            <div className="text-sm">
+                              {new Date(`2000-01-01T${game.game_time}`).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          )}
+                        </td>
+                        <td className={`px-6 py-4 ${rowTextColor}`}>
+                          <div className="text-sm">
+                            {getDisplayName(player1)} vs {getDisplayName(player2)}
+                          </div>
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-center ${rowTextColor}`}>
+                          {game.status === 'completed' && game.winner_id ? (
+                            <div className="text-sm font-semibold">
+                              Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
+                            </div>
+                          ) : (
+                            <div className="text-sm">-</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
+                              game.status
+                            )}`}
+                          >
+                            {game.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {currentUserRole === 'super_admin' && (
+                            <div className="flex justify-end gap-4">
+                              {game.status === 'scheduled' && season.status !== 'completed' && (
+                                <>
+                                  <Link
+                                    href={`/seasons/${season.id}/games/${game.id}/save`}
+                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                  >
+                                    Save Game
+                                  </Link>
+                                  <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                                </>
+                              )}
+                              {/* Super admins can delete completed games */}
+                              {game.status === 'completed' && (
+                                <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {games && games.length === 0 && (

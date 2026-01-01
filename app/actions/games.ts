@@ -45,9 +45,9 @@ export async function deleteGame(gameId: string, seasonId: string) {
       return { error: 'Game not found', success: false };
     }
 
-    // Only allow deletion of completed games
-    if (gameData.status !== 'completed') {
-      return { error: 'Only completed games can be deleted', success: false };
+    // Allow deletion of scheduled or completed games (super admin only)
+    if (gameData.status !== 'completed' && gameData.status !== 'scheduled') {
+      return { error: 'Only scheduled or completed games can be deleted', success: false };
     }
 
     // Create audit log entry before deletion
