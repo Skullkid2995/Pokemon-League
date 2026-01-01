@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { getDisplayName } from '@/lib/utils/display';
+import SeasonFilter from '@/components/SeasonFilter';
 
 interface PlayerStats {
   player_id: string;
@@ -9,14 +10,26 @@ interface PlayerStats {
   losses: number;
   total_games: number;
   win_percentage: number;
-  points: number; // You can define points system (e.g., 3 for win, 0 for loss)
+  damage_points: number;
 }
 
-export default async function RankingsPage() {
+interface RankingsPageProps {
+  searchParams: { season?: string };
+}
+
+export default async function RankingsPage({ searchParams }: RankingsPageProps) {
   const supabase = await createClient();
+  const selectedSeasonId = searchParams.season;
   
-  // Get all completed games with winners
-  const { data: games, error } = await supabase
+  // Get all seasons for the filter
+  const { data: seasons } = await supabase
+    .from('seasons')
+    .select('*')
+    .order('year', { ascending: false })
+    .order('start_date', { ascending: false });
+
+  // Build the query for games
+  let gamesQuery = supabase
     .from('games')
     .select(`
       *,
@@ -27,6 +40,13 @@ export default async function RankingsPage() {
     `)
     .eq('status', 'completed')
     .not('winner_id', 'is', null);
+
+  // Filter by season if one is selected
+  if (selectedSeasonId && selectedSeasonId !== 'all') {
+    gamesQuery = gamesQuery.eq('season_id', selectedSeasonId);
+  }
+
+  const { data: games, error } = await gamesQuery;
 
   if (error) {
     console.error('Error fetching games:', error);
@@ -51,7 +71,7 @@ export default async function RankingsPage() {
           losses: 0,
           total_games: 0,
           win_percentage: 0,
-          points: 0,
+          damage_points: 0,
         });
       }
 
@@ -65,7 +85,7 @@ export default async function RankingsPage() {
           losses: 0,
           total_games: 0,
           win_percentage: 0,
-          points: 0,
+          damage_points: 0,
         });
       }
 
@@ -78,17 +98,19 @@ export default async function RankingsPage() {
 
       if (winnerId === player1Id) {
         player1Stats.wins++;
-        player1Stats.points += 3; // 3 points for win
+        // Add damage points if available (only for wins)
+        player1Stats.damage_points += game.damage_points || 0;
         player2Stats.losses++;
       } else {
         player2Stats.wins++;
-        player2Stats.points += 3; // 3 points for win
+        // Add damage points if available (only for wins)
+        player2Stats.damage_points += game.damage_points || 0;
         player1Stats.losses++;
       }
     });
   }
 
-  // Calculate win percentages and sort by points (desc), then win percentage
+  // Calculate win percentages and sort by damage points (desc), then win percentage
   const rankings = Array.from(playerStatsMap.values())
     .map((stats) => ({
       ...stats,
@@ -97,9 +119,9 @@ export default async function RankingsPage() {
         : 0,
     }))
     .sort((a, b) => {
-      // Sort by points first (desc), then win percentage (desc)
-      if (b.points !== a.points) {
-        return b.points - a.points;
+      // Sort by damage points first (desc), then win percentage (desc)
+      if (b.damage_points !== a.damage_points) {
+        return b.damage_points - a.damage_points;
       }
       return b.win_percentage - a.win_percentage;
     });
@@ -129,14 +151,29 @@ export default async function RankingsPage() {
     return <span className="text-gray-500 dark:text-gray-400">#{index + 1}</span>;
   };
 
+  const selectedSeason = selectedSeasonId && selectedSeasonId !== 'all' 
+    ? seasons?.find(s => s.id === selectedSeasonId)
+    : null;
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Rankings</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Overall standings based on completed games
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Rankings</h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {selectedSeason 
+                  ? `Standings for ${selectedSeason.name} (${selectedSeason.year})`
+                  : 'Overall standings based on completed games from all seasons'}
+              </p>
+            </div>
+          </div>
+          
+          {/* Season Filter */}
+          {seasons && seasons.length > 0 && (
+            <SeasonFilter seasons={seasons} selectedSeasonId={selectedSeasonId} />
+          )}
         </div>
 
         {error && (
@@ -177,7 +214,7 @@ export default async function RankingsPage() {
                     Win %
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Points
+                    Damage Points
                   </th>
                 </tr>
               </thead>
@@ -221,7 +258,7 @@ export default async function RankingsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-sm font-bold text-gray-900 dark:text-white">
-                        {player.points}
+                        {player.damage_points}
                       </div>
                     </td>
                   </tr>
@@ -240,7 +277,7 @@ export default async function RankingsPage() {
                   <div className="text-2xl mb-2">🥇</div>
                   <div className="font-bold text-gray-900 dark:text-white">1st Place</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">{rankings[0].player_name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[0].points} points</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[0].damage_points} damage points</div>
                 </div>
               )}
               {rankings[1] && (
@@ -248,7 +285,7 @@ export default async function RankingsPage() {
                   <div className="text-2xl mb-2">🥈</div>
                   <div className="font-bold text-gray-900 dark:text-white">2nd Place</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">{rankings[1].player_name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[1].points} points</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[1].damage_points} damage points</div>
                 </div>
               )}
               {rankings[2] && (
@@ -256,7 +293,7 @@ export default async function RankingsPage() {
                   <div className="text-2xl mb-2">🥉</div>
                   <div className="font-bold text-gray-900 dark:text-white">3rd Place</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">{rankings[2].player_name}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[2].points} points</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[2].damage_points} damage points</div>
                 </div>
               )}
             </div>

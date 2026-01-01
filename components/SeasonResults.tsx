@@ -17,7 +17,7 @@ interface PlayerStats {
   losses: number;
   total_games: number;
   win_percentage: number;
-  points: number;
+  damage_points: number;
 }
 
 interface GameData {
@@ -74,7 +74,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
           wins: 0,
           losses: 0,
           total_games: 0,
-          points: 0,
+          damage_points: 0,
           win_percentage: 0,
         });
       }
@@ -87,7 +87,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
           wins: 0,
           losses: 0,
           total_games: 0,
-          points: 0,
+          damage_points: 0,
           win_percentage: 0,
         });
       }
@@ -100,11 +100,11 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
 
       if (winnerId === player1Id) {
         player1Stats.wins++;
-        player1Stats.points += 3;
+        player1Stats.damage_points += game.damage_points || 0;
         player2Stats.losses++;
       } else {
         player2Stats.wins++;
-        player2Stats.points += 3;
+        player2Stats.damage_points += game.damage_points || 0;
         player1Stats.losses++;
       }
     });
@@ -117,8 +117,8 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
           : 0,
       }))
       .sort((a, b) => {
-        if (b.points !== a.points) {
-          return b.points - a.points;
+        if (b.damage_points !== a.damage_points) {
+          return b.damage_points - a.damage_points;
         }
         return b.win_percentage - a.win_percentage;
       });
@@ -257,7 +257,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Losses</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Win %</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Points</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Damage Points</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -282,7 +282,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
                     {player.win_percentage}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-gray-900 dark:text-white">
-                    {player.points}
+                    {player.damage_points}
                   </td>
                 </tr>
               ))}
@@ -309,7 +309,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
                 <div className="text-4xl mb-2">🥈</div>
                 <div className="font-bold text-lg text-gray-900 dark:text-white">2nd Place</div>
                 <div className="text-gray-600 dark:text-gray-400 mt-2">{rankings[1].player_name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[1].points} points</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[1].damage_points} damage points</div>
               </div>
             )}
             {rankings[2] && (
@@ -317,7 +317,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
                 <div className="text-4xl mb-2">🥉</div>
                 <div className="font-bold text-lg text-gray-900 dark:text-white">3rd Place</div>
                 <div className="text-gray-600 dark:text-gray-400 mt-2">{rankings[2].player_name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[2].points} points</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{rankings[2].damage_points} damage points</div>
               </div>
             )}
           </div>

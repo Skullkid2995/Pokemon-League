@@ -163,73 +163,102 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
           Select Winner <span className="text-red-500">*</span>
         </label>
         <div className="space-y-3">
-          <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: winnerId === game.player1_id ? '#3b82f6' : '#e5e7eb' }}>
-            <input
-              type="radio"
-              name="winner"
-              value={game.player1_id}
-              checked={winnerId === game.player1_id}
-              onChange={(e) => setWinnerId(e.target.value)}
-              className="mr-3 w-5 h-5 text-blue-600"
-            />
-            <div className="flex-1">
-              <div className="font-semibold text-gray-900 dark:text-white">{getDisplayName(player1)}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{player1?.name}</div>
-            </div>
+          <div>
+            <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: winnerId === game.player1_id ? '#3b82f6' : '#e5e7eb' }}>
+              <input
+                type="radio"
+                name="winner"
+                value={game.player1_id}
+                checked={winnerId === game.player1_id}
+                onChange={(e) => setWinnerId(e.target.value)}
+                className="mr-3 w-5 h-5 text-blue-600"
+              />
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white">{getDisplayName(player1)}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{player1?.name}</div>
+              </div>
+              {winnerId === game.player1_id && (
+                <span className="ml-3 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                  Winner
+                </span>
+              )}
+            </label>
             {winnerId === game.player1_id && (
-              <span className="ml-3 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
-                Winner
-              </span>
+              <div className="mt-3 ml-12">
+                <label htmlFor="damage_points" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Damage Points
+                </label>
+                <input
+                  type="number"
+                  id="damage_points"
+                  min="0"
+                  step="1"
+                  value={damagePoints}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow numeric input
+                    if (value === '' || /^\d+$/.test(value)) {
+                      setDamagePoints(value);
+                    }
+                  }}
+                  placeholder="Enter damage points"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Optional: Enter the total damage points dealt in this game (numbers only).
+                </p>
+              </div>
             )}
-          </label>
-          <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: winnerId === game.player2_id ? '#3b82f6' : '#e5e7eb' }}>
-            <input
-              type="radio"
-              name="winner"
-              value={game.player2_id}
-              checked={winnerId === game.player2_id}
-              onChange={(e) => setWinnerId(e.target.value)}
-              className="mr-3 w-5 h-5 text-blue-600"
-            />
-            <div className="flex-1">
-              <div className="font-semibold text-gray-900 dark:text-white">{getDisplayName(player2)}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{player2?.name}</div>
-            </div>
+          </div>
+          <div>
+            <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: winnerId === game.player2_id ? '#3b82f6' : '#e5e7eb' }}>
+              <input
+                type="radio"
+                name="winner"
+                value={game.player2_id}
+                checked={winnerId === game.player2_id}
+                onChange={(e) => setWinnerId(e.target.value)}
+                className="mr-3 w-5 h-5 text-blue-600"
+              />
+              <div className="flex-1">
+                <div className="font-semibold text-gray-900 dark:text-white">{getDisplayName(player2)}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{player2?.name}</div>
+              </div>
+              {winnerId === game.player2_id && (
+                <span className="ml-3 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                  Winner
+                </span>
+              )}
+            </label>
             {winnerId === game.player2_id && (
-              <span className="ml-3 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
-                Winner
-              </span>
+              <div className="mt-3 ml-12">
+                <label htmlFor="damage_points" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Damage Points
+                </label>
+                <input
+                  type="number"
+                  id="damage_points"
+                  min="0"
+                  step="1"
+                  value={damagePoints}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow numeric input
+                    if (value === '' || /^\d+$/.test(value)) {
+                      setDamagePoints(value);
+                    }
+                  }}
+                  placeholder="Enter damage points"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Optional: Enter the total damage points dealt in this game (numbers only).
+                </p>
+              </div>
             )}
-          </label>
+          </div>
         </div>
       </div>
-
-      {winnerId && (
-        <div className="mb-6">
-          <label htmlFor="damage_points" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Damage Points
-          </label>
-          <input
-            type="number"
-            id="damage_points"
-            min="0"
-            step="1"
-            value={damagePoints}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Only allow numeric input
-              if (value === '' || /^\d+$/.test(value)) {
-                setDamagePoints(value);
-              }
-            }}
-            placeholder="Enter damage points"
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Optional: Enter the total damage points dealt in this game (numbers only).
-          </p>
-        </div>
-      )}
 
       <div className="mb-6">
         <label htmlFor="result_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
