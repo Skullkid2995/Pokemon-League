@@ -43,7 +43,7 @@ export default function ChangePasswordPage() {
     // Validate password strength
     const validation = validatePassword(formData.newPassword);
     if (!validation.valid) {
-      setError(validation.message);
+      setError(validation.message || 'Invalid password');
       setLoading(false);
       return;
     }
