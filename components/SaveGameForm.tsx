@@ -277,6 +277,7 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
         {imagePreview && (
           <div className="mt-4">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imagePreview}
               alt="Result preview"
