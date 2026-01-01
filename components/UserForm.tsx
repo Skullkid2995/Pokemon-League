@@ -124,7 +124,7 @@ export default function UserForm({ user }: UserFormProps) {
             type="button"
             onClick={() => {
               setTempPassword(null);
-              setFormData({ name: '', email: '' });
+              setFormData({ name: '', nickname: '', email: '' });
             }}
             className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg transition"
           >
