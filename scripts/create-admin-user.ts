@@ -34,7 +34,8 @@ async function createAdminUser() {
   console.log(`\nGenerating temporary password...\n`);
 
   // Create Supabase admin client
-  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+  // TypeScript: We've already validated these are not undefined above
+  const supabaseAdmin = createClient(supabaseUrl!, serviceRoleKey!, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
