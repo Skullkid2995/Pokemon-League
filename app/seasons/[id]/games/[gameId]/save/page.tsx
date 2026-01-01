@@ -3,12 +3,19 @@ import { redirect } from 'next/navigation';
 import SaveGameForm from '@/components/SaveGameForm';
 import Link from 'next/link';
 import { getDisplayName } from '@/lib/utils/display';
+import { getCurrentUserRole } from '@/lib/utils/auth';
 
 export default async function SaveGamePage({
   params,
 }: {
   params: { id: string; gameId: string };
 }) {
+  const userRole = await getCurrentUserRole();
+  
+  if (userRole !== 'super_admin') {
+    redirect(`/seasons/${params.id}`);
+  }
+
   const supabase = await createClient();
   
   const { data: game, error } = await supabase

@@ -30,4 +30,23 @@ export async function getUserData(authUserId: string) {
   return { data, error };
 }
 
-
+/**
+ * Get the current user's role (for server components)
+ * Returns the role or null if not authenticated or user not found
+ */
+export async function getCurrentUserRole(): Promise<'super_admin' | 'player' | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return null;
+  }
+  
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('auth_user_id', user.id)
+    .single();
+  
+  return (userData?.role as 'super_admin' | 'player') || null;
+}

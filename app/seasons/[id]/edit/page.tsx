@@ -1,12 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import SeasonForm from '@/components/SeasonForm';
+import { getCurrentUserRole } from '@/lib/utils/auth';
 
 export default async function EditSeasonPage({
   params,
 }: {
   params: { id: string };
 }) {
+  const userRole = await getCurrentUserRole();
+  
+  if (userRole !== 'super_admin') {
+    redirect(`/seasons/${params.id}`);
+  }
+
   const supabase = await createClient();
   const { data: season, error } = await supabase
     .from('seasons')

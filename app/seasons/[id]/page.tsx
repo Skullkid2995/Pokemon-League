@@ -150,8 +150,10 @@ export default function SeasonDetailPage() {
             </p>
           </div>
           <div className="flex gap-4">
-            {season.status === 'active' && <CloseSeasonButton seasonId={season.id} />}
-            {season.status === 'active' && (
+            {currentUserRole === 'super_admin' && season.status === 'active' && (
+              <CloseSeasonButton seasonId={season.id} />
+            )}
+            {currentUserRole === 'super_admin' && season.status === 'active' && (
               <Link
                 href={`/seasons/${season.id}/games/new`}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
@@ -207,9 +209,11 @@ export default function SeasonDetailPage() {
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  {currentUserRole === 'super_admin' && (
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -263,20 +267,22 @@ export default function SeasonDetailPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end gap-4">
-                          {game.status === 'scheduled' && season.status !== 'completed' ? (
-                            <Link
-                              href={`/seasons/${season.id}/games/${game.id}/save`}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            >
-                              Save Game
-                            </Link>
-                          ) : null}
-                          {/* Only super admins can delete completed games */}
-                          {game.status === 'completed' && currentUserRole === 'super_admin' && (
-                            <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                          )}
-                        </div>
+                        {currentUserRole === 'super_admin' && (
+                          <div className="flex justify-end gap-4">
+                            {game.status === 'scheduled' && season.status !== 'completed' ? (
+                              <Link
+                                href={`/seasons/${season.id}/games/${game.id}/save`}
+                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                              >
+                                Save Game
+                              </Link>
+                            ) : null}
+                            {/* Only super admins can delete completed games */}
+                            {game.status === 'completed' && (
+                              <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

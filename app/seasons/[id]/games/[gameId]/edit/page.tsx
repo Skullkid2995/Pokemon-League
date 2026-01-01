@@ -2,12 +2,19 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import GameForm from '@/components/GameForm';
 import Link from 'next/link';
+import { getCurrentUserRole } from '@/lib/utils/auth';
 
 export default async function EditGamePage({
   params,
 }: {
   params: { id: string; gameId: string };
 }) {
+  const userRole = await getCurrentUserRole();
+  
+  if (userRole !== 'super_admin') {
+    redirect(`/seasons/${params.id}`);
+  }
+
   const supabase = await createClient();
   
   const { data: game, error } = await supabase
