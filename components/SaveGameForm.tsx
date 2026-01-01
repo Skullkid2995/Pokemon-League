@@ -140,7 +140,7 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow">
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -288,17 +288,17 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
         )}
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <button
           type="submit"
           disabled={loading || uploading || !winnerId || !imageFile}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 px-6 rounded-lg transition"
+          className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 sm:py-2 px-6 rounded-lg transition text-sm sm:text-base"
         >
           {loading || uploading ? 'Saving...' : 'Save Game Result'}
         </button>
         <Link
           href={`/seasons/${seasonId}`}
-          className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg transition text-center"
+          className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2.5 sm:py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
         >
           Cancel
         </Link>
