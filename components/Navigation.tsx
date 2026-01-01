@@ -93,11 +93,17 @@ export default function Navigation() {
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {user.email}
                   </span>
+                  <Link
+                    href="/change-password"
+                    className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  >
+                    Change Password
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   >
-                    Logout
+                    Sign Out
                   </button>
                 </div>
               ) : (
@@ -135,6 +141,22 @@ export default function Navigation() {
               </Link>
             );
           })}
+          {!loading && user && (
+            <>
+              <Link
+                href="/change-password"
+                className="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              >
+                Change Password
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              >
+                Sign Out
+              </button>
+            </>
+          )}
         </div>
       </div>
     </nav>
