@@ -92,17 +92,19 @@ export default async function SeasonsPage() {
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <Link
-                    href={`/seasons/${season.id}`}
+                    href={season.status === 'completed' ? `/seasons/${season.id}/results` : `/seasons/${season.id}`}
                     className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-sm"
                   >
-                    View Games →
+                    {season.status === 'completed' ? 'View Results →' : 'View Games →'}
                   </Link>
-                  <Link
-                    href={`/seasons/${season.id}/edit`}
-                    className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
-                  >
-                    Edit
-                  </Link>
+                  {season.status !== 'completed' && (
+                    <Link
+                      href={`/seasons/${season.id}/edit`}
+                      className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
+                    >
+                      Edit
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

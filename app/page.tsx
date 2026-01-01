@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import SeasonRankings from '@/components/SeasonRankings';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -14,6 +15,15 @@ export default async function Home() {
   const userCount = usersResult.count || 0;
   const seasonCount = seasonsResult.count || 0;
   const gameCount = gamesResult.count || 0;
+
+  // Get active season
+  const { data: activeSeason } = await supabase
+    .from('seasons')
+    .select('*')
+    .eq('status', 'active')
+    .order('start_date', { ascending: false })
+    .limit(1)
+    .single();
 
   return (
     <main className="min-h-screen p-8">
@@ -45,7 +55,7 @@ export default async function Home() {
             <div className="text-gray-600 dark:text-gray-400">Seasons</div>
           </Link>
           <Link
-            href="/games"
+            href="/rankings"
             className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-lg transition"
           >
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
@@ -56,21 +66,33 @@ export default async function Home() {
         </div>
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Link
-              href="/users/new"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition text-center"
-            >
-              Add New User
-            </Link>
-            <Link
-              href="/seasons/new"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition text-center"
-            >
-              Add Season
-            </Link>
-          </div>
+          {activeSeason ? (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold">Current Season Rankings</h2>
+                <Link
+                  href={`/seasons/${activeSeason.id}`}
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                >
+                  View Season →
+                </Link>
+              </div>
+              <SeasonRankings seasonId={activeSeason.id} compact={true} />
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">No Active Season</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                There is no active season at the moment. Create a new season to get started!
+              </p>
+              <Link
+                href="/seasons/new"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+              >
+                Create Season
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </main>

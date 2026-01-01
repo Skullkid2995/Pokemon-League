@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { getDisplayName } from '@/lib/utils/display';
 import { GameWithPlayers } from '@/lib/types/database';
 
 export default async function GamesPage() {
@@ -115,7 +116,7 @@ export default async function GamesPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 dark:text-white">
-                          <div>{player1?.name || 'Unknown'} vs {player2?.name || 'Unknown'}</div>
+                          <div>{getDisplayName(player1)} vs {getDisplayName(player2)}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

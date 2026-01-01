@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import DeleteGameButton from '@/components/DeleteGameButton';
+import { getDisplayName } from '@/lib/utils/display';
+import CloseSeasonButton from '@/components/CloseSeasonButton';
 
 export default async function SeasonDetailPage({
   params,
@@ -9,6 +11,19 @@ export default async function SeasonDetailPage({
   params: { id: string };
 }) {
   const supabase = await createClient();
+  
+  // Get current user and check role
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  let currentUserRole: 'super_admin' | 'player' | null = null;
+  
+  if (authUser) {
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('role')
+      .eq('auth_user_id', authUser.id)
+      .single();
+    currentUserRole = currentUser?.role || null;
+  }
   
   // Get season details
   const { data: season, error: seasonError } = await supabase
@@ -64,18 +79,24 @@ export default async function SeasonDetailPage({
               </p>
             </div>
             <div className="flex gap-4">
-              <Link
-                href={`/seasons/${season.id}/edit`}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-6 rounded-lg transition"
-              >
-                Edit Season
-              </Link>
-              <Link
-                href={`/seasons/${season.id}/games/new`}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
-              >
-                Add Game
-              </Link>
+              {season.status === 'completed' ? (
+                <Link
+                  href={`/seasons/${season.id}/results`}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+                >
+                  View Results
+                </Link>
+              ) : (
+                <>
+                  <CloseSeasonButton seasonId={season.id} />
+                  <Link
+                    href={`/seasons/${season.id}/games/new`}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+                  >
+                    Add Game
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -141,13 +162,13 @@ export default async function SeasonDetailPage({
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 dark:text-white">
-                          <div>{player1?.name || 'Unknown'} vs {player2?.name || 'Unknown'}</div>
+                          <div>{getDisplayName(player1)} vs {getDisplayName(player2)}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {game.status === 'completed' ? (
+                        {game.status === 'completed' && game.winner_id ? (
                           <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {game.player1_score} - {game.player2_score}
+                            Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
                           </div>
                         ) : (
                           <div className="text-sm text-gray-500 dark:text-gray-400">-</div>
@@ -164,13 +185,18 @@ export default async function SeasonDetailPage({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-4">
-                          <Link
-                            href={`/seasons/${season.id}/games/${game.id}/edit`}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            Edit
-                          </Link>
-                          <DeleteGameButton gameId={game.id} seasonId={season.id} />
+                          {game.status === 'scheduled' && season.status !== 'completed' ? (
+                            <Link
+                              href={`/seasons/${season.id}/games/${game.id}/save`}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              Save Game
+                            </Link>
+                          ) : null}
+                          {/* Only super admins can delete completed games */}
+                          {game.status === 'completed' && currentUserRole === 'super_admin' && (
+                            <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                          )}
                         </div>
                       </td>
                     </tr>

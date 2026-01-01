@@ -13,7 +13,8 @@ export async function createUserWithAuth(
   name: string,
   email: string,
   passwordOption: PasswordOption = 'random',
-  role: 'super_admin' | 'player' = 'player'
+  role: 'super_admin' | 'player' = 'player',
+  nickname?: string | null
 ) {
   try {
     const supabase = await createClient();
@@ -63,6 +64,7 @@ export async function createUserWithAuth(
         .from('users')
         .insert({
           name,
+          nickname: nickname || null,
           email,
           auth_user_id: authData.user.id,
           role,
@@ -96,6 +98,7 @@ export async function createUserWithAuth(
         .from('users')
         .insert({
           name,
+          nickname: nickname || null,
           email,
           auth_user_id: authData.user.id,
           role,

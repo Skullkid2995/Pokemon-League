@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Game, User, Season } from '@/lib/types/database';
+import { getDisplayName } from '@/lib/utils/display';
 
 interface GameFormProps {
   game?: Game;
@@ -156,7 +157,7 @@ export default function GameForm({ game, seasonId }: GameFormProps) {
             <option value="">Select player 1</option>
             {users.map((user) => (
               <option key={user.id} value={user.id}>
-                {user.name}
+                {getDisplayName(user)}
               </option>
             ))}
           </select>
@@ -175,7 +176,7 @@ export default function GameForm({ game, seasonId }: GameFormProps) {
             <option value="">Select player 2</option>
             {users.map((user) => (
               <option key={user.id} value={user.id}>
-                {user.name}
+                {getDisplayName(user)}
               </option>
             ))}
           </select>

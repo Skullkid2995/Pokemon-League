@@ -22,6 +22,7 @@ export default function UserForm({ user }: UserFormProps) {
   const [role, setRole] = useState<'super_admin' | 'player'>(user?.role || 'player');
   const [formData, setFormData] = useState({
     name: user?.name || '',
+    nickname: user?.nickname || '',
     email: user?.email || '',
   });
 
@@ -38,6 +39,7 @@ export default function UserForm({ user }: UserFormProps) {
           .from('users')
           .update({
             name: formData.name,
+            nickname: formData.nickname || null,
             email: formData.email || null,
             role: role,
           })
@@ -54,7 +56,7 @@ export default function UserForm({ user }: UserFormProps) {
           return;
         }
 
-        const result = await createUserWithAuth(formData.name, formData.email, passwordOption, role);
+        const result = await createUserWithAuth(formData.name, formData.email, passwordOption, role, formData.nickname || null);
         
         if (!result.success || result.error) {
           throw new Error(result.error || 'Failed to create user');
@@ -154,6 +156,23 @@ export default function UserForm({ user }: UserFormProps) {
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           placeholder="Enter player name"
         />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Nickname
+        </label>
+        <input
+          type="text"
+          id="nickname"
+          value={formData.nickname}
+          onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          placeholder="Enter nickname (used in game displays)"
+        />
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          This nickname will be used to display "Player1 vs Player2" in games. If not provided, full name will be used.
+        </p>
       </div>
 
       <div className="mb-4">

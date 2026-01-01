@@ -1,6 +1,7 @@
 export type User = {
   id: string;
   name: string;
+  nickname: string | null;
   email: string | null;
   auth_user_id: string | null;
   role: 'super_admin' | 'player';
@@ -30,6 +31,9 @@ export type Game = {
   game_date: string;
   game_time: string | null;
   status: 'scheduled' | 'completed' | 'cancelled';
+  winner_id: string | null;
+  result_image_url: string | null;
+  damage_points: number | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

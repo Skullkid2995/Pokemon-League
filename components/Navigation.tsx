@@ -10,12 +10,24 @@ export default function Navigation() {
   const router = useRouter();
   const supabase = createClient();
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<'super_admin' | 'player' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
+      if (user) {
+        // Get user role
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('auth_user_id', user.id)
+          .single();
+        setUserRole(userData?.role || null);
+      }
+      
       setLoading(false);
     }
     getUser();
@@ -31,6 +43,8 @@ export default function Navigation() {
     { href: '/', label: 'Home' },
     { href: '/users', label: 'Users' },
     { href: '/seasons', label: 'Seasons' },
+    { href: '/rankings', label: 'Rankings' },
+    { href: '/audit-logs', label: 'Audit Logs', adminOnly: true },
   ];
 
   const isActive = (href: string) => {
@@ -51,19 +65,25 @@ export default function Navigation() {
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    isActive(item.href)
-                      ? 'border-blue-500 text-gray-900 dark:text-white'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                // Hide admin-only items for non-admins
+                if (item.adminOnly && userRole !== 'super_admin') {
+                  return null;
+                }
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      isActive(item.href)
+                        ? 'border-blue-500 text-gray-900 dark:text-white'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
           {!loading && (
@@ -96,19 +116,25 @@ export default function Navigation() {
       {/* Mobile menu */}
       <div className="sm:hidden">
         <div className="pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                isActive(item.href)
-                  ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            // Hide admin-only items for non-admins
+            if (item.adminOnly && userRole !== 'super_admin') {
+              return null;
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive(item.href)
+                    ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </nav>
