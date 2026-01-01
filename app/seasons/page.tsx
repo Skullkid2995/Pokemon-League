@@ -32,14 +32,14 @@ export default async function SeasonsPage() {
   };
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Seasons</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Seasons</h1>
           {isSuperAdmin && (
             <Link
               href="/seasons/new"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg transition text-sm sm:text-base w-full sm:w-auto text-center"
             >
               Add Season
             </Link>
@@ -67,11 +67,11 @@ export default async function SeasonsPage() {
         )}
 
         {seasons && seasons.length > 0 && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {seasons.map((season: Season) => (
               <div
                 key={season.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition"
               >
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">

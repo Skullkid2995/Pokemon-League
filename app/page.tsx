@@ -26,16 +26,16 @@ export default async function Home() {
     .single();
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Pokemon League</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">Pokemon League</h1>
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400">
             Official Pokemon Trading Card Game League Score Tracker
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Link
             href="/users"
             className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-lg transition"
@@ -65,11 +65,11 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow">
           {activeSeason ? (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Current Season Rankings</h2>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold">Current Season Rankings</h2>
                 <Link
                   href={`/seasons/${activeSeason.id}`}
                   className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
@@ -81,13 +81,13 @@ export default async function Home() {
             </div>
           ) : (
             <div>
-              <h2 className="text-2xl font-bold mb-4">No Active Season</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">No Active Season</h2>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
                 There is no active season at the moment. Create a new season to get started!
               </p>
               <Link
                 href="/seasons/new"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg transition text-sm sm:text-base"
               >
                 Create Season
               </Link>

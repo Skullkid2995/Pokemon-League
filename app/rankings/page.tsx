@@ -154,13 +154,13 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
     : null;
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Rankings</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Rankings</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {selectedSeason 
                   ? `Standings for ${selectedSeason.name} (${selectedSeason.year})`
                   : 'Overall standings based on completed games from all seasons'}
@@ -190,7 +190,8 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
 
         {rankings.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -262,14 +263,15 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         )}
 
         {rankings.length > 0 && (
-          <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Prize Positions</h2>
-            <div className="grid md:grid-cols-3 gap-4">
+          <div className="mt-6 sm:mt-8 bg-blue-50 dark:bg-blue-900/20 p-4 sm:p-6 rounded-lg">
+            <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-900 dark:text-white">Prize Positions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {rankings[0] && (
                 <div className="bg-yellow-100 dark:bg-yellow-900/40 p-4 rounded-lg">
                   <div className="text-2xl mb-2">🥇</div>
