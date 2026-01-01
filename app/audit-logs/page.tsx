@@ -1,25 +1,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { getCurrentUserRole } from '@/lib/utils/auth';
 
 export default async function AuditLogsPage() {
-  const supabase = await createClient();
+  // Only super admins can access audit logs
+  const userRole = await getCurrentUserRole();
   
-  // Check if user is authenticated and is super admin
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  
-  if (!authUser) {
-    redirect('/login');
-  }
-
-  const { data: currentUser } = await supabase
-    .from('users')
-    .select('role')
-    .eq('auth_user_id', authUser.id)
-    .single();
-
-  if (currentUser?.role !== 'super_admin') {
+  if (userRole !== 'super_admin') {
     redirect('/');
   }
+
+  const supabase = await createClient();
 
   // Get audit logs
   const { data: auditLogs, error } = await supabase
