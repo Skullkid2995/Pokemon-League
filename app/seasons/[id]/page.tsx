@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import DeleteGameButton from '@/components/DeleteGameButton';
-import { getDisplayName } from '@/lib/utils/display';
+import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
 import CloseSeasonButton from '@/components/CloseSeasonButton';
 import { User, Season } from '@/lib/types/database';
 
@@ -146,7 +146,7 @@ export default function SeasonDetailPage() {
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2">{season.name}</h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-              {new Date(season.start_date).toLocaleDateString()} - {new Date(season.end_date).toLocaleDateString()} ({season.year})
+              {formatLocalDate(season.start_date)} - {formatLocalDate(season.end_date)} ({season.year})
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -212,7 +212,7 @@ export default function SeasonDetailPage() {
                     <div className="flex justify-between items-start mb-3">
                       <div className={rowTextColor}>
                         <div className="text-sm font-medium">
-                          {new Date(game.game_date).toLocaleDateString()}
+                          {formatLocalDate(game.game_date)}
                         </div>
                         {game.game_time && (
                           <div className="text-sm">
@@ -312,7 +312,7 @@ export default function SeasonDetailPage() {
                       >
                         <td className={`px-6 py-4 whitespace-nowrap ${rowTextColor}`}>
                           <div className="text-sm font-medium">
-                            {new Date(game.game_date).toLocaleDateString()}
+                            {formatLocalDate(game.game_date)}
                           </div>
                           {game.game_time && (
                             <div className="text-sm">

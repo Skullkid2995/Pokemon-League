@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { getDisplayName } from '@/lib/utils/display';
+import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
 
 interface SaveGameFormProps {
   game: any; // Game with player1 and player2
@@ -153,7 +153,7 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
           {getDisplayName(player1)} vs {getDisplayName(player2)}
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Date: {new Date(game.game_date).toLocaleDateString()}
+          Date: {formatLocalDate(game.game_date)}
           {game.game_time && ` at ${new Date(`2000-01-01T${game.game_time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
         </p>
       </div>

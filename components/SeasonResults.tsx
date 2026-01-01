@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getDisplayName } from '@/lib/utils/display';
+import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
 
 interface SeasonResultsProps {
   seasonId: string;
@@ -135,7 +135,7 @@ export default function SeasonResults({ seasonId, season }: SeasonResultsProps) 
     const chartDataArray: GameData[] = [];
 
     sortedGames.forEach((game: any) => {
-      const date = new Date(game.game_date).toLocaleDateString();
+      const date = formatLocalDate(game.game_date);
       const player1Id = game.player1_id;
       const player2Id = game.player2_id;
       const winnerId = game.winner_id;

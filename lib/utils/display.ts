@@ -8,3 +8,17 @@ export function getDisplayName(user: User | null | undefined): string {
   return user.nickname || user.name;
 }
 
+/**
+ * Format a date string (YYYY-MM-DD) as a local date string
+ * This prevents timezone issues where dates are shifted by one day
+ */
+export function formatLocalDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  // Parse the date string (YYYY-MM-DD) as local time
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  
+  return date.toLocaleDateString();
+}
+

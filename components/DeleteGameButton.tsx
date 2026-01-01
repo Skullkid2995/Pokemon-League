@@ -14,6 +14,7 @@ export default function DeleteGameButton({ gameId, seasonId, gameStatus }: Delet
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleDelete = async () => {
     // Allow deletion of scheduled or completed games (super admin only)
@@ -23,6 +24,7 @@ export default function DeleteGameButton({ gameId, seasonId, gameStatus }: Delet
 
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       const result = await deleteGame(gameId, seasonId);
@@ -31,25 +33,42 @@ export default function DeleteGameButton({ gameId, seasonId, gameStatus }: Delet
         throw new Error(result.error || 'Failed to delete game');
       }
 
-      router.refresh();
+      // Show success message
+      setSuccess(true);
+      setLoading(false);
+      
+      // Refresh the page after a brief delay to show the success message
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || 'Unable to Delete');
       setLoading(false);
     }
   };
 
+  if (success) {
+    return (
+      <span className="text-green-600 dark:text-green-400 text-sm font-medium">
+        Deleted Successfully
+      </span>
+    );
+  }
+
   return (
-    <>
+    <div className="flex flex-col items-end">
       {error && (
-        <div className="text-red-600 text-xs">{error}</div>
+        <div className="text-red-600 dark:text-red-400 text-xs mb-1 font-medium">
+          Unable to Delete
+        </div>
       )}
       <button
         onClick={handleDelete}
         disabled={loading}
-        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 text-sm font-medium"
       >
         {loading ? 'Deleting...' : 'Delete'}
       </button>
-    </>
+    </div>
   );
 }

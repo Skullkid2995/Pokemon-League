@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { getDisplayName } from '@/lib/utils/display';
+import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
 import { GameWithPlayers } from '@/lib/types/database';
 
 export default async function GamesPage() {
@@ -98,7 +98,7 @@ export default async function GamesPage() {
                     <tr key={game.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {new Date(game.game_date).toLocaleDateString()}
+                          {formatLocalDate(game.game_date)}
                         </div>
                         {game.game_time && (
                           <div className="text-sm text-gray-500 dark:text-gray-400">

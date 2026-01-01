@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { getCurrentUserRole } from '@/lib/utils/auth';
+import { formatLocalDate } from '@/lib/utils/display';
 
 export default async function AuditLogsPage() {
   // Only super admins can access audit logs
@@ -30,7 +31,7 @@ export default async function AuditLogsPage() {
       const game = changes.game_data;
       const player1 = game.player1?.nickname || game.player1?.name || 'Unknown';
       const player2 = game.player2?.nickname || game.player2?.name || 'Unknown';
-      return `Game: ${player1} vs ${player2} on ${new Date(game.game_date).toLocaleDateString()}`;
+      return `Game: ${player1} vs ${player2} on ${formatLocalDate(game.game_date)}`;
     }
     
     return JSON.stringify(changes, null, 2);
