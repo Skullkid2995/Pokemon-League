@@ -104,20 +104,20 @@ export default function SeasonDetailPage() {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-500 text-white font-bold shadow-md';
       case 'scheduled':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-blue-500 text-white font-bold shadow-md';
       case 'cancelled':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-600 text-white font-bold shadow-md';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-gray-500 text-white font-bold shadow-md';
     }
   };
 
   const getGameCompletionStatus = (game: any) => {
     // If game is already completed
     if (game.status === 'completed') {
-      return { status: 'Game Saved', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+      return { status: 'Game Saved', color: 'bg-green-500 text-white font-bold shadow-md' };
     }
 
     const hasP1Image = !!game.player1_result_image_url;
@@ -133,12 +133,12 @@ export default function SeasonDetailPage() {
 
     // Check for winner mismatch
     if (hasP1Winner && hasP2Winner && game.player1_winner_selection !== game.player2_winner_selection) {
-      return { status: 'Winner Mismatch', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' };
+      return { status: 'Winner Mismatch', color: 'bg-red-600 text-white font-bold shadow-md' };
     }
 
     // Check if all data is provided
     if (p1Complete && p2Complete) {
-      return { status: 'Ready to Complete', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+      return { status: 'Ready to Complete', color: 'bg-yellow-400 text-red-600 font-bold shadow-md' };
     }
 
     // Check which players are missing data
@@ -147,10 +147,10 @@ export default function SeasonDetailPage() {
     if (!p2Complete) missingPlayers.push(getDisplayName(game.player2));
 
     if (missingPlayers.length === 2) {
-      return { status: 'Pending', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+      return { status: 'Pending', color: 'bg-gray-500 text-white font-bold shadow-md' };
     }
 
-    return { status: `Pending: ${missingPlayers.join(', ')}`, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+    return { status: `Pending: ${missingPlayers.join(', ')}`, color: 'bg-orange-500 text-white font-bold shadow-md' };
   };
 
   if (loading) {
@@ -197,7 +197,7 @@ export default function SeasonDetailPage() {
             {currentUserRole === 'super_admin' && season.status === 'active' && (
               <Link
                 href={`/seasons/${season.id}/games/new`}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
+                className="tcg-gradient-primary hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl text-center text-sm sm:text-base"
               >
                 Add Game
               </Link>
@@ -303,7 +303,7 @@ export default function SeasonDetailPage() {
                             {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
                               <Link
                                 href={`/seasons/${season.id}/games/${game.id}/save`}
-                                className="text-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium py-2 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition"
+                                className="text-center text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-bold py-2 px-4 bg-yellow-400 hover:bg-yellow-300 rounded-lg transition-all shadow-md hover:shadow-lg"
                               >
                                 {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
                               </Link>
@@ -412,7 +412,7 @@ export default function SeasonDetailPage() {
                                   {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
                                     <Link
                                       href={`/seasons/${season.id}/games/${game.id}/save`}
-                                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                      className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold"
                                     >
                                       {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
                                     </Link>
