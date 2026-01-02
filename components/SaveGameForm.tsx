@@ -246,9 +246,21 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
       const player1HasWinnerSelection = updateData.player1_winner_selection || currentGame?.player1_winner_selection;
       const player2HasWinnerSelection = updateData.player2_winner_selection || currentGame?.player2_winner_selection;
 
-      // If both players have uploaded images, entered damage points, AND selected winner, mark as completed
+      // Check for winner mismatch - both players have selected but they don't match
+      if (player1HasWinnerSelection && player2HasWinnerSelection) {
+        const p1Selection = updateData.player1_winner_selection || currentGame?.player1_winner_selection;
+        const p2Selection = updateData.player2_winner_selection || currentGame?.player2_winner_selection;
+        
+        if (p1Selection !== p2Selection) {
+          setError('Winner Mismatch: Both players must select the same winner. Please coordinate and select the correct winner.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // If both players have uploaded images, entered damage points, AND selected winner (and they match), mark as completed
       if (player1HasImage && player2HasImage && player1HasDamagePoints && player2HasDamagePoints && player1HasWinnerSelection && player2HasWinnerSelection) {
-        // Use the winner selections (they should match, but use player1's selection as primary)
+        // Use the winner selections (they should match now after validation)
         const selectedWinner = updateData.player1_winner_selection || currentGame?.player1_winner_selection;
         updateData.winner_id = selectedWinner;
         
@@ -319,8 +331,15 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
             const hasP2Image = game.player2_result_image_url;
             const hasP1Damage = game.player1_damage_points !== null && game.player1_damage_points !== undefined;
             const hasP2Damage = game.player2_damage_points !== null && game.player2_damage_points !== undefined;
+            const hasP1Winner = game.player1_winner_selection;
+            const hasP2Winner = game.player2_winner_selection;
             
-            if (hasP1Image && hasP2Image && hasP1Damage && hasP2Damage) {
+            // Check for winner mismatch
+            if (hasP1Winner && hasP2Winner && game.player1_winner_selection !== game.player2_winner_selection) {
+              return '⚠ Winner Mismatch - Players selected different winners';
+            }
+            
+            if (hasP1Image && hasP2Image && hasP1Damage && hasP2Damage && hasP1Winner && hasP2Winner) {
               return '✓ Ready to complete - All information provided';
             }
             
@@ -329,6 +348,8 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
             if (!hasP2Image) missing.push(`${getDisplayName(player2)} screenshot`);
             if (!hasP1Damage) missing.push(`${getDisplayName(player1)} damage points`);
             if (!hasP2Damage) missing.push(`${getDisplayName(player2)} damage points`);
+            if (!hasP1Winner) missing.push(`${getDisplayName(player1)} winner selection`);
+            if (!hasP2Winner) missing.push(`${getDisplayName(player2)} winner selection`);
             
             return `Waiting for: ${missing.join(', ')}`;
           })()}

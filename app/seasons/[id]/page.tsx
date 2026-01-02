@@ -114,6 +114,45 @@ export default function SeasonDetailPage() {
     }
   };
 
+  const getGameCompletionStatus = (game: any) => {
+    // If game is already completed
+    if (game.status === 'completed') {
+      return { status: 'Game Saved', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+    }
+
+    const hasP1Image = !!game.player1_result_image_url;
+    const hasP2Image = !!game.player2_result_image_url;
+    const hasP1Damage = game.player1_damage_points !== null && game.player1_damage_points !== undefined;
+    const hasP2Damage = game.player2_damage_points !== null && game.player2_damage_points !== undefined;
+    const hasP1Winner = !!game.player1_winner_selection;
+    const hasP2Winner = !!game.player2_winner_selection;
+
+    // Check if player has all required data (image, damage, winner)
+    const p1Complete = hasP1Image && hasP1Damage && hasP1Winner;
+    const p2Complete = hasP2Image && hasP2Damage && hasP2Winner;
+
+    // Check for winner mismatch
+    if (hasP1Winner && hasP2Winner && game.player1_winner_selection !== game.player2_winner_selection) {
+      return { status: 'Winner Mismatch', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' };
+    }
+
+    // Check if all data is provided
+    if (p1Complete && p2Complete) {
+      return { status: 'Ready to Complete', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+    }
+
+    // Check which players are missing data
+    const missingPlayers = [];
+    if (!p1Complete) missingPlayers.push(getDisplayName(game.player1));
+    if (!p2Complete) missingPlayers.push(getDisplayName(game.player2));
+
+    if (missingPlayers.length === 2) {
+      return { status: 'Pending', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+    }
+
+    return { status: `Pending: ${missingPlayers.join(', ')}`, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-8">
@@ -247,6 +286,16 @@ export default function SeasonDetailPage() {
                         <div className="text-sm">No score yet</div>
                       )}
                     </div>
+                    <div className="mb-3">
+                      {(() => {
+                        const completionStatus = getGameCompletionStatus(game);
+                        return (
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${completionStatus.color}`}>
+                            {completionStatus.status}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     {(currentUserRole === 'super_admin' || currentUserId === game.player1_id || currentUserId === game.player2_id) && (
                       <div className="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         {game.status === 'scheduled' && season.status !== 'completed' && (
@@ -295,11 +344,14 @@ export default function SeasonDetailPage() {
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Status
                     </th>
-                    {currentUserRole === 'super_admin' && (
+                    {(currentUserRole === 'super_admin' || currentUserId) && (
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Actions
                       </th>
                     )}
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Game Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -376,6 +428,16 @@ export default function SeasonDetailPage() {
                               )}
                             </div>
                           )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          {(() => {
+                            const completionStatus = getGameCompletionStatus(game);
+                            return (
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${completionStatus.color}`}>
+                                {completionStatus.status}
+                              </span>
+                            );
+                          })()}
                         </td>
                       </tr>
                     );
