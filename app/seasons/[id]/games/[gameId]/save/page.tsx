@@ -3,21 +3,32 @@ import { redirect } from 'next/navigation';
 import SaveGameForm from '@/components/SaveGameForm';
 import Link from 'next/link';
 import { getDisplayName } from '@/lib/utils/display';
-import { getCurrentUserRole } from '@/lib/utils/auth';
 
 export default async function SaveGamePage({
   params,
 }: {
   params: { id: string; gameId: string };
 }) {
-  const userRole = await getCurrentUserRole();
+  const supabase = await createClient();
   
-  if (userRole !== 'super_admin') {
+  // Get current authenticated user
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (!authUser) {
     redirect(`/seasons/${params.id}`);
   }
 
-  const supabase = await createClient();
-  
+  // Get current user record
+  const { data: currentUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_user_id', authUser.id)
+    .single();
+
+  if (!currentUser) {
+    redirect(`/seasons/${params.id}`);
+  }
+
+  // Get game with players
   const { data: game, error } = await supabase
     .from('games')
     .select(`
@@ -29,6 +40,22 @@ export default async function SaveGamePage({
     .single();
 
   if (error || !game) {
+    redirect(`/seasons/${params.id}`);
+  }
+
+  // Check if current user is one of the players (or is super admin)
+  const { data: userRoleData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', currentUser.id)
+    .single();
+
+  const isSuperAdmin = userRoleData?.role === 'super_admin';
+  const isPlayer1 = currentUser.id === game.player1_id;
+  const isPlayer2 = currentUser.id === game.player2_id;
+
+  // Allow access only if user is super admin or one of the players
+  if (!isSuperAdmin && !isPlayer1 && !isPlayer2) {
     redirect(`/seasons/${params.id}`);
   }
 

@@ -32,8 +32,14 @@ export type Game = {
   game_time: string | null;
   status: 'scheduled' | 'completed' | 'cancelled';
   winner_id: string | null;
-  result_image_url: string | null;
-  damage_points: number | null;
+  result_image_url: string | null; // Legacy field, kept for backward compatibility
+  damage_points: number | null; // Legacy field, kept for backward compatibility
+  player1_result_image_url: string | null;
+  player2_result_image_url: string | null;
+  player1_damage_points: number | null;
+  player2_damage_points: number | null;
+  player1_winner_selection: string | null;
+  player2_winner_selection: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

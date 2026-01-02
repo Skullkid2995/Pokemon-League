@@ -20,6 +20,7 @@ export default function SeasonDetailPage() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<'super_admin' | 'player' | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -30,10 +31,11 @@ export default function SeasonDetailPage() {
         if (authUser) {
           const { data: currentUser } = await supabase
             .from('users')
-            .select('role')
+            .select('id, role')
             .eq('auth_user_id', authUser.id)
             .single();
           setCurrentUserRole(currentUser?.role || null);
+          setCurrentUserId(currentUser?.id || null);
         }
 
         // Get season
@@ -245,22 +247,26 @@ export default function SeasonDetailPage() {
                         <div className="text-sm">No score yet</div>
                       )}
                     </div>
-                    {currentUserRole === 'super_admin' && (
+                    {(currentUserRole === 'super_admin' || currentUserId === game.player1_id || currentUserId === game.player2_id) && (
                       <div className="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         {game.status === 'scheduled' && season.status !== 'completed' && (
                           <>
-                            <Link
-                              href={`/seasons/${season.id}/games/${game.id}/save`}
-                              className="text-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium py-2 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition"
-                            >
-                              Save Game
-                            </Link>
-                            <div className="flex justify-center">
-                              <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                            </div>
+                            {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
+                              <Link
+                                href={`/seasons/${season.id}/games/${game.id}/save`}
+                                className="text-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium py-2 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition"
+                              >
+                                {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
+                              </Link>
+                            )}
+                            {currentUserRole === 'super_admin' && (
+                              <div className="flex justify-center">
+                                <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                              </div>
+                            )}
                           </>
                         )}
-                        {game.status === 'completed' && (
+                        {game.status === 'completed' && currentUserRole === 'super_admin' && (
                           <div className="flex justify-center">
                             <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
                           </div>
@@ -347,21 +353,25 @@ export default function SeasonDetailPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {currentUserRole === 'super_admin' && (
+                          {(currentUserRole === 'super_admin' || currentUserId === game.player1_id || currentUserId === game.player2_id) && (
                             <div className="flex justify-end gap-4">
                               {game.status === 'scheduled' && season.status !== 'completed' && (
                                 <>
-                                  <Link
-                                    href={`/seasons/${season.id}/games/${game.id}/save`}
-                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                  >
-                                    Save Game
-                                  </Link>
-                                  <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                                  {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
+                                    <Link
+                                      href={`/seasons/${season.id}/games/${game.id}/save`}
+                                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >
+                                      {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
+                                    </Link>
+                                  )}
+                                  {currentUserRole === 'super_admin' && (
+                                    <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
+                                  )}
                                 </>
                               )}
                               {/* Super admins can delete completed games */}
-                              {game.status === 'completed' && (
+                              {game.status === 'completed' && currentUserRole === 'super_admin' && (
                                 <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
                               )}
                             </div>
