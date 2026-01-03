@@ -175,14 +175,20 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
           setLoading(false);
           return;
         }
-        const damagePointsNumber = player1DamagePoints.trim() === '' ? null : parseInt(player1DamagePoints, 10);
-        if (damagePointsNumber !== null && (isNaN(damagePointsNumber) || damagePointsNumber < 0)) {
-          setError('Damage points must be a valid non-negative number');
-          setLoading(false);
-          return;
+        
+        // Always update if player has entered a value (even if it's 0)
+        if (player1DamagePoints.trim() !== '') {
+          const damagePointsNumber = parseInt(player1DamagePoints, 10);
+          if (isNaN(damagePointsNumber) || damagePointsNumber < 0) {
+            setError('Damage points must be a valid non-negative number');
+            setLoading(false);
+            return;
+          }
+          updateData.player1_damage_points = damagePointsNumber;
+        } else if (currentGame?.player1_damage_points !== undefined && currentGame?.player1_damage_points !== null) {
+          // Keep existing value if user didn't change it
+          updateData.player1_damage_points = currentGame.player1_damage_points;
         }
-        // Use new value if provided, otherwise keep existing value, otherwise null
-        updateData.player1_damage_points = damagePointsNumber !== null ? damagePointsNumber : (currentGame?.player1_damage_points ?? null);
       }
 
       if (isPlayer2) {
@@ -192,14 +198,20 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
           setLoading(false);
           return;
         }
-        const damagePointsNumber = player2DamagePoints.trim() === '' ? null : parseInt(player2DamagePoints, 10);
-        if (damagePointsNumber !== null && (isNaN(damagePointsNumber) || damagePointsNumber < 0)) {
-          setError('Damage points must be a valid non-negative number');
-          setLoading(false);
-          return;
+        
+        // Always update if player has entered a value (even if it's 0)
+        if (player2DamagePoints.trim() !== '') {
+          const damagePointsNumber = parseInt(player2DamagePoints, 10);
+          if (isNaN(damagePointsNumber) || damagePointsNumber < 0) {
+            setError('Damage points must be a valid non-negative number');
+            setLoading(false);
+            return;
+          }
+          updateData.player2_damage_points = damagePointsNumber;
+        } else if (currentGame?.player2_damage_points !== undefined && currentGame?.player2_damage_points !== null) {
+          // Keep existing value if user didn't change it
+          updateData.player2_damage_points = currentGame.player2_damage_points;
         }
-        // Use new value if provided, otherwise keep existing value, otherwise null
-        updateData.player2_damage_points = damagePointsNumber !== null ? damagePointsNumber : (currentGame?.player2_damage_points ?? null);
       }
 
       // Check if both damage points will be present

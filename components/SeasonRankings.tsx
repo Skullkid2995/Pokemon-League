@@ -29,8 +29,7 @@ export default async function SeasonRankings({ seasonId, compact = false }: Seas
     `)
     .eq('season_id', seasonId)
     .eq('status', 'completed')
-    .not('winner_id', 'is', null)
-    .not('result_image_url', 'is', null);
+    .not('winner_id', 'is', null);
 
   // Calculate statistics
   const playerStatsMap = new Map<string, any>();
@@ -71,12 +70,16 @@ export default async function SeasonRankings({ seasonId, compact = false }: Seas
 
       if (winnerId === player1Id) {
         player1Stats.wins++;
-        player1Stats.damage_points += game.damage_points || 0;
+        // Add damage points for both players (using player-specific damage points)
+        player1Stats.damage_points += game.player1_damage_points || 0;
         player2Stats.losses++;
+        player2Stats.damage_points += game.player2_damage_points || 0;
       } else {
         player2Stats.wins++;
-        player2Stats.damage_points += game.damage_points || 0;
+        // Add damage points for both players (using player-specific damage points)
+        player2Stats.damage_points += game.player2_damage_points || 0;
         player1Stats.losses++;
+        player1Stats.damage_points += game.player1_damage_points || 0;
       }
     });
   }
@@ -89,10 +92,14 @@ export default async function SeasonRankings({ seasonId, compact = false }: Seas
         : 0,
     }))
     .sort((a, b) => {
-      if (b.damage_points !== a.damage_points) {
-        return b.damage_points - a.damage_points;
+      // Sort by wins first (desc), then win percentage (desc), then damage points (desc)
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
       }
-      return b.win_percentage - a.win_percentage;
+      if (b.win_percentage !== a.win_percentage) {
+        return b.win_percentage - a.win_percentage;
+      }
+      return b.damage_points - a.damage_points;
     })
     .slice(0, compact ? 5 : undefined); // Show top 5 if compact
 

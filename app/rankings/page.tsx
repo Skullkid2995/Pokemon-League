@@ -96,19 +96,21 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
 
       if (winnerId === player1Id) {
         player1Stats.wins++;
-        // Add damage points if available (only for wins)
-        player1Stats.damage_points += game.damage_points || 0;
+        // Add damage points for both players (using player-specific damage points)
+        player1Stats.damage_points += game.player1_damage_points || 0;
         player2Stats.losses++;
+        player2Stats.damage_points += game.player2_damage_points || 0;
       } else {
         player2Stats.wins++;
-        // Add damage points if available (only for wins)
-        player2Stats.damage_points += game.damage_points || 0;
+        // Add damage points for both players (using player-specific damage points)
+        player2Stats.damage_points += game.player2_damage_points || 0;
         player1Stats.losses++;
+        player1Stats.damage_points += game.player1_damage_points || 0;
       }
     });
   }
 
-  // Calculate win percentages and sort by damage points (desc), then win percentage
+  // Calculate win percentages and sort by wins (desc), then win percentage, then damage points
   const rankings = Array.from(playerStatsMap.values())
     .map((stats) => ({
       ...stats,
@@ -117,11 +119,14 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
         : 0,
     }))
     .sort((a, b) => {
-      // Sort by damage points first (desc), then win percentage (desc)
-      if (b.damage_points !== a.damage_points) {
-        return b.damage_points - a.damage_points;
+      // Sort by wins first (desc), then win percentage (desc), then damage points (desc)
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
       }
-      return b.win_percentage - a.win_percentage;
+      if (b.win_percentage !== a.win_percentage) {
+        return b.win_percentage - a.win_percentage;
+      }
+      return b.damage_points - a.damage_points;
     });
 
   const getRankBadge = (index: number) => {
