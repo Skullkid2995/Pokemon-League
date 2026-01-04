@@ -17,6 +17,7 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isPlayer1, setIsPlayer1] = useState(false);
   const [isPlayer2, setIsPlayer2] = useState(false);
@@ -57,7 +58,70 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
     checkCurrentUser();
   }, [supabase, game.player1_id, game.player2_id]);
 
-  const handleImageChange = (player: 'player1' | 'player2', e: React.ChangeEvent<HTMLInputElement>) => {
+  const analyzeImage = async (file: File, playerType: 'player1' | 'player2') => {
+    setAnalyzing(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('player1Name', getDisplayName(player1));
+      formData.append('player2Name', getDisplayName(player2));
+
+      const response = await fetch('/api/analyze-game-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze image');
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const { winner, player1DamagePoints, player2DamagePoints, confidence } = result.data;
+
+        // Auto-populate damage points
+        if (playerType === 'player1' && player1DamagePoints !== null) {
+          setPlayer1DamagePoints(player1DamagePoints.toString());
+        }
+        if (playerType === 'player2' && player2DamagePoints !== null) {
+          setPlayer2DamagePoints(player2DamagePoints.toString());
+        }
+
+        // Auto-select winner if detected with high confidence
+        if (winner === 'player1' && confidence === 'high') {
+          if (playerType === 'player1') {
+            setPlayer1WinnerSelection(game.player1_id);
+          } else {
+            setPlayer2WinnerSelection(game.player1_id);
+          }
+        } else if (winner === 'player2' && confidence === 'high') {
+          if (playerType === 'player1') {
+            setPlayer1WinnerSelection(game.player2_id);
+          } else {
+            setPlayer2WinnerSelection(game.player2_id);
+          }
+        }
+
+        // Show success message
+        if (confidence === 'high') {
+          setError(null);
+        } else {
+          setError(`Image analyzed with ${confidence} confidence. Please verify the extracted data.`);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error analyzing image:', err);
+      setError(`Could not automatically extract data from image: ${err.message}. Please enter the information manually.`);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleImageChange = async (player: 'player1' | 'player2', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type
@@ -86,6 +150,10 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
         };
         reader.readAsDataURL(file);
       }
+      setError(null);
+
+      // Automatically analyze the image to extract game data
+      await analyzeImage(file, player);
     }
   };
 
@@ -388,10 +456,14 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
                   id="player1_result_image"
                   accept="image/*"
                   onChange={(e) => handleImageChange('player1', e)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  disabled={analyzing}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Upload a screenshot or photo of the game result as proof. Max 5MB. (PNG, JPG, etc.)
+                  {analyzing 
+                    ? 'Analyzing image to extract game data...' 
+                    : 'Upload a screenshot - we\'ll automatically extract the winner and damage points!'}
+                  {' '}Max 5MB. (PNG, JPG, etc.)
                 </p>
                 {player1ImagePreview && (
                   <div className="mt-4">
@@ -501,10 +573,14 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
                   id="player2_result_image"
                   accept="image/*"
                   onChange={(e) => handleImageChange('player2', e)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  disabled={analyzing}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Upload a screenshot or photo of the game result as proof. Max 5MB. (PNG, JPG, etc.)
+                  {analyzing 
+                    ? '🔍 Analyzing image to extract game data...' 
+                    : '📸 Upload a screenshot - we\'ll automatically extract the winner and damage points!'}
+                  {' '}Max 5MB. (PNG, JPG, etc.)
                 </p>
                 {player2ImagePreview && (
                   <div className="mt-4">
