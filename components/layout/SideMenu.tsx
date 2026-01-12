@@ -150,10 +150,6 @@ export default function SideMenu({
           {/* Navigation Items */}
           <nav className="flex-1 p-4 space-y-2">
             {navItems.map((item) => {
-              if (item.adminOnly && userRole !== 'super_admin') {
-                return null;
-              }
-
               const Icon = item.icon;
               const active = isActive(item.href);
 

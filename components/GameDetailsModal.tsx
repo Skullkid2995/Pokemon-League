@@ -249,9 +249,9 @@ export default function GameDetailsModal({
                     )}
                   </>
                 )}
-                {game.status === 'completed' && currentUserRole === 'super_admin' && (
+                {game.status === 'completed' && currentUserRole === 'super_admin' && seasonId && (
                   <div className="flex justify-center">
-                    <DeleteGameButton gameId={game.id} seasonId={seasonId} gameStatus={game.status || 'completed'} />
+                    <DeleteGameButton gameId={game.id} seasonId={seasonId} gameStatus={'completed'} />
                   </div>
                 )}
               </div>

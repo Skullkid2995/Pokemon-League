@@ -137,7 +137,7 @@ export default function GymLeadersCard({ leaders }: GymLeadersCardProps) {
                     {leader.avatarUrl ? (
                       <img
                         src={leader.avatarUrl}
-                        alt={getDisplayName({ name: leader.playerName, nickname: leader.playerNickname })}
+                        alt={getDisplayName({ name: leader.playerName ?? '', nickname: leader.playerNickname ?? null })}
                         className="w-20 h-20 rounded-full border-4 border-white/80 shadow-lg object-cover mb-2"
                       />
                     ) : (
