@@ -19,9 +19,8 @@ export default async function EditGamePage({
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 bg-[#ffe0e0]">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Edit Game</h1>
         <GameForm game={game} />
       </div>
     </div>

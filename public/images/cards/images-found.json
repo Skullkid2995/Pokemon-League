@@ -1,0 +1,614 @@
+[
+  {
+    "name": "Pokémon Zone logo",
+    "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo.svg",
+    "width": 300,
+    "height": 87,
+    "className": "global-header__logo-img d-none d-md-block",
+    "visible": true,
+    "index": 0
+  },
+  {
+    "name": "Pokémon Zone logo",
+    "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo-mobile.svg",
+    "width": 107,
+    "height": 150,
+    "className": "global-header__logo-mobile-img d-block d-md-none",
+    "visible": false,
+    "index": 1
+  },
+  {
+    "name": "Pokémon Zone logo",
+    "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo.svg",
+    "width": 300,
+    "height": 87,
+    "className": "global-header__logo-img",
+    "visible": true,
+    "index": 2
+  },
+  {
+    "name": "image-3",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000010_00_FUSHIGIDANE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 3
+  },
+  {
+    "name": "image-4",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000020_00_FUSHIGISOU_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 4
+  },
+  {
+    "name": "image-5",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000030_00_FUSHIGIBANA_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 5
+  },
+  {
+    "name": "image-6",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000040_00_FUSHIGIBANAex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 6
+  },
+  {
+    "name": "image-7",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000050_00_CATERPIE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 7
+  },
+  {
+    "name": "image-8",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000060_00_TRANSEL_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 8
+  },
+  {
+    "name": "image-9",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000070_00_BUTTERFREE_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 9
+  },
+  {
+    "name": "image-10",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000080_00_BEEDLE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 10
+  },
+  {
+    "name": "image-11",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000090_00_COCOON_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 11
+  },
+  {
+    "name": "image-12",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000100_00_SPEAR_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 12
+  },
+  {
+    "name": "image-13",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000110_00_NAZONOKUSA_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 13
+  },
+  {
+    "name": "image-14",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000120_00_KUSAIHANA_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 14
+  },
+  {
+    "name": "image-15",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000130_00_RUFFRESIA_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 15
+  },
+  {
+    "name": "image-16",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000140_00_PARAS_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 16
+  },
+  {
+    "name": "image-17",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000150_00_PARASECT_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 17
+  },
+  {
+    "name": "image-18",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000160_00_KONGPANG_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 18
+  },
+  {
+    "name": "image-19",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000170_00_MORPHON_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 19
+  },
+  {
+    "name": "image-20",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000180_00_MADATSUBOMI_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": true,
+    "index": 20
+  },
+  {
+    "name": "image-21",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000190_00_UTSUDON_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 21
+  },
+  {
+    "name": "image-22",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000200_00_UTSUBOT_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 22
+  },
+  {
+    "name": "image-23",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000210_00_TAMATAMA_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 23
+  },
+  {
+    "name": "image-24",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000220_00_NASSY_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 24
+  },
+  {
+    "name": "image-25",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000230_00_NASSYex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 25
+  },
+  {
+    "name": "image-26",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000240_00_MONJARA_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 26
+  },
+  {
+    "name": "image-27",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000250_00_STRIKE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 27
+  },
+  {
+    "name": "image-28",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000260_00_KAILIOS_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 28
+  },
+  {
+    "name": "image-29",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000270_00_MONMEN_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 29
+  },
+  {
+    "name": "image-30",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000280_00_ELFUUN_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 30
+  },
+  {
+    "name": "image-31",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000290_00_CHURINE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 31
+  },
+  {
+    "name": "image-32",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000300_00_DREDEAR_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 32
+  },
+  {
+    "name": "image-33",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000310_00_MEECLE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 33
+  },
+  {
+    "name": "image-34",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000320_00_GOGOAT_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 34
+  },
+  {
+    "name": "image-35",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000330_00_HITOKAGE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 35
+  },
+  {
+    "name": "image-36",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000340_00_LIZARDO_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 36
+  },
+  {
+    "name": "image-37",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000350_00_LIZARDON_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 37
+  },
+  {
+    "name": "image-38",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000360_00_LIZARDONex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 38
+  },
+  {
+    "name": "image-39",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000370_00_ROKON_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 39
+  },
+  {
+    "name": "image-40",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000380_00_KYUKON_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 40
+  },
+  {
+    "name": "image-41",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000390_00_GARDIE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 41
+  },
+  {
+    "name": "image-42",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000400_00_WINDIE_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 42
+  },
+  {
+    "name": "image-43",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000410_00_WINDIEex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 43
+  },
+  {
+    "name": "image-44",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000420_00_PONYTA_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 44
+  },
+  {
+    "name": "image-45",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000430_00_GALLOP_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 45
+  },
+  {
+    "name": "image-46",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000440_00_BOOBER_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 46
+  },
+  {
+    "name": "image-47",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000450_00_BOOSTER_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 47
+  },
+  {
+    "name": "image-48",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000460_00_FIRE_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 48
+  },
+  {
+    "name": "image-49",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000470_00_FIREex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 49
+  },
+  {
+    "name": "image-50",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000480_00_KUITARAN_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 50
+  },
+  {
+    "name": "image-51",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000490_00_YATOUMORI_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 51
+  },
+  {
+    "name": "image-52",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000500_00_ENNEWT_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 52
+  },
+  {
+    "name": "image-53",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000510_00_YAKUDE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 53
+  },
+  {
+    "name": "image-54",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000520_00_MARUYAKUDE_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 54
+  },
+  {
+    "name": "image-55",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000530_00_ZENIGAME_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 55
+  },
+  {
+    "name": "image-56",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000540_00_KAMEIL_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 56
+  },
+  {
+    "name": "image-57",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000550_00_KAMEX_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 57
+  },
+  {
+    "name": "image-58",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000560_00_KAMEXex_RR.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 58
+  },
+  {
+    "name": "image-59",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000570_00_KODUCK_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 59
+  },
+  {
+    "name": "image-60",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000580_00_GOLDUCK_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 60
+  },
+  {
+    "name": "image-61",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000590_00_NYOROMO_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 61
+  },
+  {
+    "name": "image-62",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000600_00_NYOROZO_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 62
+  },
+  {
+    "name": "image-63",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000610_00_NYOROBON_R.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 63
+  },
+  {
+    "name": "image-64",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000620_00_MENOKURAGE_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 64
+  },
+  {
+    "name": "image-65",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000630_00_DOKUKURAGE_U.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 65
+  },
+  {
+    "name": "image-66",
+    "url": "https://assets.pokemon-zone.com/game-assets/CardPreviews/cPK_10_000640_00_PAWOU_C.webp?width=350&quality=80",
+    "width": 350,
+    "height": 488,
+    "className": "game-card-image__img",
+    "visible": false,
+    "index": 66
+  },
+  {
+    "name": "image-67",
+    "url": "https://pixel.rubiconproject.com/token?pid=49096&us_privacy=1YNY",
+    "width": 0,
+    "height": 0,
+    "className": "",
+    "visible": false,
+    "index": 67
+  }
+]

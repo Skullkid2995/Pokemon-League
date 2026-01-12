@@ -6,6 +6,7 @@ export type User = {
   auth_user_id: string | null;
   role: 'super_admin' | 'player';
   must_change_password: boolean | null;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 };

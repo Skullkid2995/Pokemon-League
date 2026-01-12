@@ -1,463 +1,88 @@
-'use client';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import SeasonDetailClient from '@/components/SeasonDetailClient';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import DeleteGameButton from '@/components/DeleteGameButton';
-import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
-import CloseSeasonButton from '@/components/CloseSeasonButton';
-import { User, Season } from '@/lib/types/database';
+export default async function SeasonDetailPage({ params }: { params: { id: string } }) {
+  const supabase = await createClient();
+  const seasonId = params.id;
 
-export default function SeasonDetailPage() {
-  const params = useParams();
-  const seasonId = params.id as string;
-  const supabase = createClient();
-  const [season, setSeason] = useState<Season | null>(null);
-  const [games, setGames] = useState<any[]>([]);
-  const [allGames, setAllGames] = useState<any[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
-  const [currentUserRole, setCurrentUserRole] = useState<'super_admin' | 'player' | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Fetch all data in PARALLEL for better performance
+  const [
+    { data: { user: authUser } },
+    seasonResult,
+    usersResult,
+    gamesResult
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('seasons')
+      .select('id, name, year, start_date, end_date, status, created_at, updated_at')
+      .eq('id', seasonId)
+      .single(),
+    supabase
+      .from('users')
+      .select('id, name, nickname')
+      .order('name'),
+    supabase
+      .from('games')
+      .select(`
+        id,
+        season_id,
+        player1_id,
+        player2_id,
+        game_date,
+        game_time,
+        status,
+        winner_id,
+        player1_score,
+        player2_score,
+        player1_damage_points,
+        player2_damage_points,
+        player1_result_image_url,
+        player2_result_image_url,
+        player1_winner_selection,
+        player2_winner_selection,
+        notes,
+        player1:users!games_player1_id_fkey(id, name, nickname),
+        player2:users!games_player2_id_fkey(id, name, nickname),
+        winner:users!games_winner_id_fkey(id, name, nickname)
+      `)
+      .eq('season_id', seasonId)
+      .order('game_date', { ascending: false })
+      .order('game_time', { ascending: false })
+      .limit(200) // Limit to prevent excessive data
+  ]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Get current user and role
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (authUser) {
-          const { data: currentUser } = await supabase
-            .from('users')
-            .select('id, role')
-            .eq('auth_user_id', authUser.id)
-            .single();
-          setCurrentUserRole(currentUser?.role || null);
-          setCurrentUserId(currentUser?.id || null);
-        }
-
-        // Get season
-        const { data: seasonData, error: seasonError } = await supabase
-          .from('seasons')
-          .select('*')
-          .eq('id', seasonId)
-          .single();
-
-        if (seasonError || !seasonData) {
-          console.error('Error fetching season:', seasonError);
-          return;
-        }
-
-        setSeason(seasonData);
-
-        // Get users for filter
-        const { data: usersData } = await supabase
-          .from('users')
-          .select('*')
-          .order('name');
-
-        if (usersData) {
-          setUsers(usersData);
-        }
-
-        // Get games
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('games')
-          .select(`
-            *,
-            player1:users!games_player1_id_fkey(*),
-            player2:users!games_player2_id_fkey(*)
-          `)
-          .eq('season_id', seasonId)
-          .order('game_date', { ascending: false })
-          .order('game_time', { ascending: false });
-
-        if (gamesError) {
-          console.error('Error fetching games:', gamesError);
-        } else if (gamesData) {
-          setAllGames(gamesData);
-          setGames(gamesData);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [seasonId, supabase]);
-
-  useEffect(() => {
-    if (selectedPlayerId === 'all') {
-      setGames(allGames);
-    } else {
-      const filtered = allGames.filter(
-        (game) => game.player1_id === selectedPlayerId || game.player2_id === selectedPlayerId
-      );
-      setGames(filtered);
-    }
-  }, [selectedPlayerId, allGames]);
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-500 text-white font-bold shadow-md';
-      case 'scheduled':
-        return 'bg-blue-500 text-white font-bold shadow-md';
-      case 'cancelled':
-        return 'bg-red-600 text-white font-bold shadow-md';
-      default:
-        return 'bg-gray-500 text-white font-bold shadow-md';
-    }
-  };
-
-  const getGameCompletionStatus = (game: any) => {
-    // If game is already completed
-    if (game.status === 'completed') {
-      return { status: 'Game Saved', color: 'bg-green-500 text-white font-bold shadow-md' };
-    }
-
-    const hasP1Image = !!game.player1_result_image_url;
-    const hasP2Image = !!game.player2_result_image_url;
-    const hasP1Damage = game.player1_damage_points !== null && game.player1_damage_points !== undefined;
-    const hasP2Damage = game.player2_damage_points !== null && game.player2_damage_points !== undefined;
-    const hasP1Winner = !!game.player1_winner_selection;
-    const hasP2Winner = !!game.player2_winner_selection;
-
-    // Check if player has all required data (image, damage, winner)
-    const p1Complete = hasP1Image && hasP1Damage && hasP1Winner;
-    const p2Complete = hasP2Image && hasP2Damage && hasP2Winner;
-
-    // Check for winner mismatch
-    if (hasP1Winner && hasP2Winner && game.player1_winner_selection !== game.player2_winner_selection) {
-      return { status: 'Winner Mismatch', color: 'bg-red-600 text-white font-bold shadow-md' };
-    }
-
-    // Check if all data is provided
-    if (p1Complete && p2Complete) {
-      return { status: 'Ready to Complete', color: 'bg-yellow-400 text-red-600 font-bold shadow-md' };
-    }
-
-    // Check which players are missing data
-    const missingPlayers = [];
-    if (!p1Complete) missingPlayers.push(getDisplayName(game.player1));
-    if (!p2Complete) missingPlayers.push(getDisplayName(game.player2));
-
-    if (missingPlayers.length === 2) {
-      return { status: 'Pending', color: 'bg-gray-500 text-white font-bold shadow-md' };
-    }
-
-    return { status: `Pending: ${missingPlayers.join(', ')}`, color: 'bg-orange-500 text-white font-bold shadow-md' };
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">Loading...</div>
-        </div>
-      </div>
-    );
+  // Handle errors
+  if (seasonResult.error || !seasonResult.data) {
+    redirect('/seasons');
   }
 
-  if (!season) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">Season not found</div>
-        </div>
-      </div>
-    );
+  // Get current user info
+  let currentUserId: string | null = null;
+  let currentUserRole: 'super_admin' | 'player' | null = null;
+  
+  if (authUser) {
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('id, role')
+      .eq('auth_user_id', authUser.id)
+      .single();
+    
+    currentUserId = currentUser?.id || null;
+    currentUserRole = currentUser?.role || null;
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        <Link
-          href="/seasons"
-          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4 inline-block"
-        >
-          ← Back to Seasons
-        </Link>
-
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{season.name}</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-              {formatLocalDate(season.start_date)} - {formatLocalDate(season.end_date)} ({season.year})
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            {currentUserRole === 'super_admin' && season.status === 'active' && (
-              <CloseSeasonButton seasonId={season.id} />
-            )}
-            {currentUserRole === 'super_admin' && season.status === 'active' && (
-              <Link
-                href={`/seasons/${season.id}/games/new`}
-                className="tcg-gradient-primary hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl text-center text-sm sm:text-base"
-              >
-                Add Game
-              </Link>
-            )}
-            {season.status === 'completed' && (
-              <Link
-                href={`/seasons/${season.id}/results`}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
-              >
-                View Results
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Player Filter */}
-        <div className="mb-6">
-          <label htmlFor="playerFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Filter by Player
-          </label>
-          <select
-            id="playerFilter"
-            value={selectedPlayerId}
-            onChange={(e) => setSelectedPlayerId(e.target.value)}
-            className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-          >
-            <option value="all">All Players</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {getDisplayName(user)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {games && games.length > 0 && (
-          <>
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-              {games.map((game: any) => {
-                const player1 = game.player1;
-                const player2 = game.player2;
-                const isCompleted = game.status === 'completed';
-                const rowTextColor = isCompleted 
-                  ? 'text-gray-600 dark:text-gray-400' 
-                  : 'text-gray-900 dark:text-white';
-                
-                return (
-                  <div 
-                    key={game.id} 
-                    className={`bg-white dark:bg-gray-800 rounded-lg shadow p-4 ${isCompleted ? 'opacity-75' : ''}`}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className={rowTextColor}>
-                        <div className="text-sm font-medium">
-                          {formatLocalDate(game.game_date)}
-                        </div>
-                        {game.game_time && (
-                          <div className="text-sm">
-                            {new Date(`2000-01-01T${game.game_time}`).toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit',
-                            })}
-                          </div>
-                        )}
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
-                          game.status
-                        )}`}
-                      >
-                        {game.status}
-                      </span>
-                    </div>
-                    <div className={`mb-3 ${rowTextColor}`}>
-                      <div className="text-sm font-semibold">
-                        {getDisplayName(player1)} vs {getDisplayName(player2)}
-                      </div>
-                    </div>
-                    <div className={`mb-3 ${rowTextColor}`}>
-                      {game.status === 'completed' && game.winner_id ? (
-                        <div className="text-sm font-semibold">
-                          Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
-                        </div>
-                      ) : (
-                        <div className="text-sm">No score yet</div>
-                      )}
-                    </div>
-                    <div className="mb-3">
-                      {(() => {
-                        const completionStatus = getGameCompletionStatus(game);
-                        return (
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${completionStatus.color}`}>
-                            {completionStatus.status}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    {(currentUserRole === 'super_admin' || currentUserId === game.player1_id || currentUserId === game.player2_id) && (
-                      <div className="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        {game.status === 'scheduled' && season.status !== 'completed' && (
-                          <>
-                            {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
-                              <Link
-                                href={`/seasons/${season.id}/games/${game.id}/save`}
-                                className="text-center text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-bold py-2 px-4 bg-yellow-400 hover:bg-yellow-300 rounded-lg transition-all shadow-md hover:shadow-lg"
-                              >
-                                {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
-                              </Link>
-                            )}
-                            {currentUserRole === 'super_admin' && (
-                              <div className="flex justify-center">
-                                <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                              </div>
-                            )}
-                          </>
-                        )}
-                        {game.status === 'completed' && currentUserRole === 'super_admin' && (
-                          <div className="flex justify-center">
-                            <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Date & Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Players
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Status
-                    </th>
-                    {(currentUserRole === 'super_admin' || currentUserId) && (
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    )}
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Game Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {games.map((game: any) => {
-                    const player1 = game.player1;
-                    const player2 = game.player2;
-                    const isCompleted = game.status === 'completed';
-                    const rowTextColor = isCompleted 
-                      ? 'text-gray-600 dark:text-gray-400' 
-                      : 'text-gray-900 dark:text-white';
-                    
-                    return (
-                      <tr 
-                        key={game.id} 
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${isCompleted ? 'opacity-75' : ''}`}
-                      >
-                        <td className={`px-6 py-4 whitespace-nowrap ${rowTextColor}`}>
-                          <div className="text-sm font-medium">
-                            {formatLocalDate(game.game_date)}
-                          </div>
-                          {game.game_time && (
-                            <div className="text-sm">
-                              {new Date(`2000-01-01T${game.game_time}`).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                              })}
-                            </div>
-                          )}
-                        </td>
-                        <td className={`px-6 py-4 ${rowTextColor}`}>
-                          <div className="text-sm">
-                            {getDisplayName(player1)} vs {getDisplayName(player2)}
-                          </div>
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-center ${rowTextColor}`}>
-                          {game.status === 'completed' && game.winner_id ? (
-                            <div className="text-sm font-semibold">
-                              Winner: {getDisplayName(game.winner_id === game.player1_id ? player1 : player2)}
-                            </div>
-                          ) : (
-                            <div className="text-sm">-</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
-                              game.status
-                            )}`}
-                          >
-                            {game.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {(currentUserRole === 'super_admin' || currentUserId === game.player1_id || currentUserId === game.player2_id) && (
-                            <div className="flex justify-end gap-4">
-                              {game.status === 'scheduled' && season.status !== 'completed' && (
-                                <>
-                                  {(currentUserId === game.player1_id || currentUserId === game.player2_id || currentUserRole === 'super_admin') && (
-                                    <Link
-                                      href={`/seasons/${season.id}/games/${game.id}/save`}
-                                      className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold"
-                                    >
-                                      {currentUserRole === 'super_admin' ? 'Save Game' : 'Upload My Screenshot'}
-                                    </Link>
-                                  )}
-                                  {currentUserRole === 'super_admin' && (
-                                    <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                                  )}
-                                </>
-                              )}
-                              {/* Super admins can delete completed games */}
-                              {game.status === 'completed' && currentUserRole === 'super_admin' && (
-                                <DeleteGameButton gameId={game.id} seasonId={season.id} gameStatus={game.status} />
-                              )}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          {(() => {
-                            const completionStatus = getGameCompletionStatus(game);
-                            return (
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${completionStatus.color}`}>
-                                {completionStatus.status}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-
-        {games && games.length === 0 && (
-          <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded-lg text-center">
-            <p className="text-gray-600 dark:text-gray-400">
-              {selectedPlayerId === 'all' 
-                ? 'No games scheduled for this season yet.' 
-                : 'No games found for this player.'}
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
+    <Suspense fallback={<div className="min-h-screen p-8">Loading...</div>}>
+      <SeasonDetailClient
+        season={seasonResult.data}
+        games={gamesResult.data || []}
+        users={usersResult.data || []}
+        currentUserRole={currentUserRole}
+        currentUserId={currentUserId}
+      />
+    </Suspense>
   );
 }

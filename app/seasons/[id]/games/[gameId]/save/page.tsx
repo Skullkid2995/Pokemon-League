@@ -75,10 +75,6 @@ export default async function SaveGamePage({
         >
           ← Back to {season?.name || 'Season'}
         </Link>
-        <h1 className="text-4xl font-bold mb-8">Save Game Result</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {getDisplayName(game.player1)} vs {getDisplayName(game.player2)}
-        </p>
         <SaveGameForm game={game} seasonId={params.id} />
       </div>
     </div>

@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { getDisplayName, formatLocalDate } from '@/lib/utils/display';
+import { getDisplayName } from '@/lib/utils/display';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Upload, Check, X, Trophy, Shield, Zap } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface SaveGameFormProps {
   game: any; // Game with player1 and player2
@@ -20,6 +24,7 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isPlayer1, setIsPlayer1] = useState(false);
   const [isPlayer2, setIsPlayer2] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   // Player 1 state
   const [player1ImageFile, setPlayer1ImageFile] = useState<File | null>(null);
@@ -288,12 +293,33 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
       }
 
       // Update game
-      const { error: updateError } = await supabase
+      const { data: updatedGame, error: updateError } = await supabase
         .from('games')
         .update(updateData)
-        .eq('id', game.id);
+        .eq('id', game.id)
+        .select('player1_deck_type, player2_deck_type, winner_id')
+        .single();
 
       if (updateError) throw updateError;
+
+      // Process achievements if game was completed
+      if (updateData.status === 'completed' && updatedGame?.winner_id) {
+        try {
+          const { processGameCompletion } = await import('@/app/actions/achievements');
+          await processGameCompletion(
+            game.id,
+            updatedGame.winner_id,
+            game.player1_id,
+            game.player2_id,
+            updatedGame.player1_deck_type,
+            updatedGame.player2_deck_type,
+            seasonId
+          );
+        } catch (achievementError) {
+          console.error('Error processing achievements:', achievementError);
+          // Don't fail the entire operation if achievements fail
+        }
+      }
 
       router.push(`/seasons/${seasonId}`);
       router.refresh();
@@ -320,290 +346,247 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
     );
   }
 
+  // Get opponent's data
+  const opponent = isPlayer1 ? player2 : player1;
+  const opponentImage = isPlayer1 ? game.player2_result_image_url : game.player1_result_image_url;
+  const opponentWinnerSelection = isPlayer1 ? game.player2_winner_selection : game.player1_winner_selection;
+  const opponentDamagePoints = isPlayer1 ? game.player2_damage_points : game.player1_damage_points;
+  const myImage = isPlayer1 ? player1ImagePreview : player2ImagePreview;
+  const myImageUrl = isPlayer1 ? game.player1_result_image_url : game.player2_result_image_url;
+  const myWinnerSelection = isPlayer1 ? player1WinnerSelection : player2WinnerSelection;
+  const myDamagePoints = isPlayer1 ? player1DamagePoints : player2DamagePoints;
+  
+  // Determine who opponent selected as winner
+  const opponentSelectedWinner = opponentWinnerSelection 
+    ? (opponentWinnerSelection === game.player1_id ? player1 : player2)
+    : null;
+
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
 
-      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Game Details</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {getDisplayName(player1)} vs {getDisplayName(player2)}
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Date: {formatLocalDate(game.game_date)}
-          {game.game_time && ` at ${new Date(`2000-01-01T${game.game_time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`}
-        </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-          Status: {(() => {
-            const hasP1Image = game.player1_result_image_url;
-            const hasP2Image = game.player2_result_image_url;
-            const hasP1Damage = game.player1_damage_points !== null && game.player1_damage_points !== undefined;
-            const hasP2Damage = game.player2_damage_points !== null && game.player2_damage_points !== undefined;
-            const hasP1Winner = game.player1_winner_selection;
-            const hasP2Winner = game.player2_winner_selection;
+      {/* Screenshots Comparison - Side by Side */}
+      <Card className="p-6">
+        <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-center">
+          {getDisplayName(player1)} <span className="text-muted-foreground">vs</span> {getDisplayName(player2)}
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Your Screenshot */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Your Screenshot
+            </h3>
             
-            // Check for winner mismatch
-            if (hasP1Winner && hasP2Winner && game.player1_winner_selection !== game.player2_winner_selection) {
-              return '⚠ Winner Mismatch - Players selected different winners';
-            }
-            
-            if (hasP1Image && hasP2Image && hasP1Damage && hasP2Damage && hasP1Winner && hasP2Winner) {
-              return '✓ Ready to complete - All information provided';
-            }
-            
-            const missing = [];
-            if (!hasP1Image) missing.push(`${getDisplayName(player1)} screenshot`);
-            if (!hasP2Image) missing.push(`${getDisplayName(player2)} screenshot`);
-            if (!hasP1Damage) missing.push(`${getDisplayName(player1)} damage points`);
-            if (!hasP2Damage) missing.push(`${getDisplayName(player2)} damage points`);
-            if (!hasP1Winner) missing.push(`${getDisplayName(player1)} winner selection`);
-            if (!hasP2Winner) missing.push(`${getDisplayName(player2)} winner selection`);
-            
-            return `Waiting for: ${missing.join(', ')}`;
-          })()}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Player 1 Section */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {getDisplayName(player1)}
-            {isPlayer1 && <span className="ml-2 text-sm font-normal text-blue-600 dark:text-blue-400">(You)</span>}
-          </h4>
-          
-          {/* Image Upload - Only for Player 1 */}
-          <div className="mb-4">
-            <label htmlFor="player1_result_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Screenshot (Proof) {isPlayer1 && !game.player1_result_image_url && <span className="text-red-500">*</span>}
-            </label>
-            {isPlayer1 ? (
-              <>
+            {/* Upload Button - Thematic and Compact */}
+            {(isPlayer1 || isPlayer2) ? (
+              <label className="block">
                 <input
                   type="file"
-                  id="player1_result_image"
+                  id={isPlayer1 ? "player1_result_image" : "player2_result_image"}
                   accept="image/*"
-                  onChange={(e) => handleImageChange('player1', e)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  onChange={(e) => handleImageChange(isPlayer1 ? 'player1' : 'player2', e)}
+                  className="hidden"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Upload a screenshot or photo of the game result as proof. Max 5MB. (PNG, JPG, etc.)
-                </p>
-                {player1ImagePreview && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={player1ImagePreview}
-                      alt="Player 1 result preview"
-                      className="max-w-full h-auto rounded-lg border border-gray-300 dark:border-gray-600"
-                      style={{ maxHeight: '300px' }}
-                    />
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                {game.player1_result_image_url ? '✓ Screenshot uploaded' : 'Waiting for screenshot'}
+                <div className="relative">
+                  {(isPlayer1 ? (player1ImagePreview || game.player1_result_image_url) : (player2ImagePreview || game.player2_result_image_url)) ? (
+                    <div className="relative group">
+                      <img
+                        src={isPlayer1 ? (player1ImagePreview || game.player1_result_image_url || '') : (player2ImagePreview || game.player2_result_image_url || '')}
+                        alt="Your screenshot"
+                        className="w-full h-64 object-cover rounded-lg border-2 border-primary shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setSelectedImage(isPlayer1 ? (player1ImagePreview || game.player1_result_image_url || '') : (player2ImagePreview || game.player2_result_image_url || ''))}
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            document.getElementById(isPlayer1 ? 'player1_result_image' : 'player2_result_image')?.click();
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Change
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById(isPlayer1 ? 'player1_result_image' : 'player2_result_image')?.click()}
+                      className="w-full h-64 border-2 border-dashed border-primary/50 rounded-lg bg-gradient-to-br from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 transition-all flex flex-col items-center justify-center gap-3 group"
+                    >
+                      {/* Pokeball Icon */}
+                      <div className="relative">
+                        <svg width="60" height="60" viewBox="0 0 120 120" fill="none" className="opacity-60 group-hover:opacity-100 transition-opacity">
+                          <circle cx="60" cy="60" r="60" fill="#FF0000"/>
+                          <circle cx="60" cy="60" r="45" fill="#FFFFFF"/>
+                          <rect x="15" y="60" width="90" height="5" fill="#000000"/>
+                          <circle cx="60" cy="60" r="15" fill="#FFFFFF" stroke="#000000" strokeWidth="3"/>
+                          <circle cx="60" cy="60" r="8" fill="#000000"/>
+                        </svg>
+                        <Upload className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
+                      </div>
+                      <span className="text-sm font-semibold text-primary">Upload Screenshot</span>
+                      <span className="text-xs text-muted-foreground">Max 5MB</span>
+                    </button>
+                  )}
+                </div>
+              </label>
+            ) : null}
+
+            {/* Your Damage Points - Compact and Thematic */}
+            {(isPlayer1 || isPlayer2) && (
+              <div className="space-y-2">
+                <label htmlFor={isPlayer1 ? "player1_damage_points" : "player2_damage_points"} className="block text-sm font-medium flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  Damage Points {!game[isPlayer1 ? 'player1_damage_points' : 'player2_damage_points'] && <span className="text-red-500">*</span>}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    id={isPlayer1 ? "player1_damage_points" : "player2_damage_points"}
+                    min="0"
+                    step="1"
+                    value={myDamagePoints}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || /^\d+$/.test(value)) {
+                        if (isPlayer1) setPlayer1DamagePoints(value);
+                        else setPlayer2DamagePoints(value);
+                      }
+                    }}
+                    placeholder="0"
+                    required={!game[isPlayer1 ? 'player1_damage_points' : 'player2_damage_points']}
+                    className="w-full px-4 py-3 text-center text-2xl font-bold border-2 border-primary/30 rounded-lg bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 focus:ring-2 focus:ring-primary focus:border-primary"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">HP</div>
+                </div>
+              </div>
+            )}
+
+            {/* Your Winner Selection */}
+            {(isPlayer1 || isPlayer2) && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium flex items-center justify-center gap-2">
+                  <Trophy className="h-4 w-4 text-yellow-500" />
+                  Select Winner {!game[isPlayer1 ? 'player1_winner_selection' : 'player2_winner_selection'] && <span className="text-red-500">*</span>}
+                </label>
+                <div className="flex justify-center gap-4 max-w-md mx-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isPlayer1) setPlayer1WinnerSelection(game.player1_id);
+                      else setPlayer2WinnerSelection(game.player1_id);
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all flex-1 ${
+                      (isPlayer1 ? player1WinnerSelection : player2WinnerSelection) === game.player1_id
+                        ? 'border-primary bg-primary/10 shadow-lg scale-105'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-semibold text-center">{getDisplayName(player1)}</div>
+                    {(isPlayer1 ? player1WinnerSelection : player2WinnerSelection) === game.player1_id && (
+                      <Check className="h-5 w-5 mx-auto mt-2 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isPlayer1) setPlayer1WinnerSelection(game.player2_id);
+                      else setPlayer2WinnerSelection(game.player2_id);
+                    }}
+                    className={`p-4 rounded-lg border-2 transition-all flex-1 ${
+                      (isPlayer1 ? player1WinnerSelection : player2WinnerSelection) === game.player2_id
+                        ? 'border-primary bg-primary/10 shadow-lg scale-105'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-semibold text-center">{getDisplayName(player2)}</div>
+                    {(isPlayer1 ? player1WinnerSelection : player2WinnerSelection) === game.player2_id && (
+                      <Check className="h-5 w-5 mx-auto mt-2 text-primary" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Damage Points - Only for Player 1 */}
-          {isPlayer1 && (
-            <div className="mb-4">
-              <label htmlFor="player1_damage_points" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Your Damage Points {!game.player1_damage_points && <span className="text-red-500">*</span>}
-              </label>
-              <input
-                type="number"
-                id="player1_damage_points"
-                min="0"
-                step="1"
-                value={player1DamagePoints}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || /^\d+$/.test(value)) {
-                    setPlayer1DamagePoints(value);
-                  }
-                }}
-                placeholder="Enter your damage points"
-                required={!game.player1_damage_points}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {game.player2_result_image_url 
-                  ? 'Required: Enter your total damage points dealt in this game to complete the game.'
-                  : 'Enter your total damage points dealt in this game (numbers only).'}
-              </p>
-            </div>
-          )}
-
-          {/* Winner Selection - Only for Player 1 */}
-          {isPlayer1 && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Select Winner {!game.player1_winner_selection && <span className="text-red-500">*</span>}
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: player1WinnerSelection === game.player1_id ? '#3b82f6' : '#e5e7eb' }}>
-                  <input
-                    type="radio"
-                    name="player1_winner"
-                    value={game.player1_id}
-                    checked={player1WinnerSelection === game.player1_id}
-                    onChange={(e) => setPlayer1WinnerSelection(e.target.value)}
-                    className="mr-3 w-5 h-5 text-blue-600"
+          {/* Opponent Screenshot */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              {getDisplayName(opponent)}&apos;s Screenshot
+            </h3>
+            
+            <div className="relative">
+              {opponentImage ? (
+                <div className="relative">
+                  <img
+                    src={opponentImage}
+                    alt={`${getDisplayName(opponent)}'s screenshot`}
+                    className="w-full h-64 object-cover rounded-lg border-2 border-border shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setSelectedImage(opponentImage)}
                   />
-                  <div className="flex-1 font-semibold text-gray-900 dark:text-white">{getDisplayName(player1)}</div>
-                </label>
-                <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: player1WinnerSelection === game.player2_id ? '#3b82f6' : '#e5e7eb' }}>
-                  <input
-                    type="radio"
-                    name="player1_winner"
-                    value={game.player2_id}
-                    checked={player1WinnerSelection === game.player2_id}
-                    onChange={(e) => setPlayer1WinnerSelection(e.target.value)}
-                    className="mr-3 w-5 h-5 text-blue-600"
-                  />
-                  <div className="flex-1 font-semibold text-gray-900 dark:text-white">{getDisplayName(player2)}</div>
-                </label>
-              </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {game.player2_result_image_url && game.player2_damage_points !== null
-                  ? 'Required: Select who won the game to complete the game.'
-                  : 'Select who won this game.'}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Player 2 Section */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {getDisplayName(player2)}
-            {isPlayer2 && <span className="ml-2 text-sm font-normal text-blue-600 dark:text-blue-400">(You)</span>}
-          </h4>
-          
-          {/* Image Upload - Only for Player 2 */}
-          <div className="mb-4">
-            <label htmlFor="player2_result_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Screenshot (Proof) {isPlayer2 && !game.player2_result_image_url && <span className="text-red-500">*</span>}
-            </label>
-            {isPlayer2 ? (
-              <>
-                <input
-                  type="file"
-                  id="player2_result_image"
-                  accept="image/*"
-                  onChange={(e) => handleImageChange('player2', e)}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Upload a screenshot or photo of the game result as proof. Max 5MB. (PNG, JPG, etc.)
-                </p>
-                {player2ImagePreview && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={player2ImagePreview}
-                      alt="Player 2 result preview"
-                      className="max-w-full h-auto rounded-lg border border-gray-300 dark:border-gray-600"
-                      style={{ maxHeight: '300px' }}
-                    />
+                  {/* Opponent's Winner Selection Indicator */}
+                  {opponentSelectedWinner && (
+                    <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full p-2 shadow-lg border-2 border-yellow-400 z-10">
+                      <div className="flex flex-col items-center gap-1">
+                        <Trophy className="h-5 w-5 text-yellow-500" />
+                        <span className="text-xs font-bold text-center">Selected:</span>
+                        <span className="text-xs font-semibold text-center">{getDisplayName(opponentSelectedWinner)}</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 z-10">
+                    <Check className="h-3 w-3" />
+                    Uploaded
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                {game.player2_result_image_url ? '✓ Screenshot uploaded' : 'Waiting for screenshot'}
-              </div>
-            )}
+                </div>
+              ) : (
+                <div className="w-full h-64 border-2 border-dashed border-border rounded-lg bg-muted/30 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2 opacity-50">⏳</div>
+                    <p className="text-sm text-muted-foreground font-medium">Waiting for upload</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Opponent's Damage Points Display */}
+              {opponentDamagePoints !== null && opponentDamagePoints !== undefined && (
+                <div className="mt-3 p-3 rounded-lg bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-300/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-yellow-600" />
+                      Damage Points:
+                    </span>
+                    <span className="text-xl font-bold text-yellow-700 dark:text-yellow-400">{opponentDamagePoints} HP</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Damage Points - Only for Player 2 */}
-          {isPlayer2 && (
-            <div className="mb-4">
-              <label htmlFor="player2_damage_points" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Your Damage Points {!game.player2_damage_points && <span className="text-red-500">*</span>}
-              </label>
-              <input
-                type="number"
-                id="player2_damage_points"
-                min="0"
-                step="1"
-                value={player2DamagePoints}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '' || /^\d+$/.test(value)) {
-                    setPlayer2DamagePoints(value);
-                  }
-                }}
-                placeholder="Enter your damage points"
-                required={!game.player2_damage_points}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {game.player1_result_image_url 
-                  ? 'Required: Enter your total damage points dealt in this game to complete the game.'
-                  : 'Enter your total damage points dealt in this game (numbers only).'}
-              </p>
-            </div>
-          )}
-
-          {/* Winner Selection - Only for Player 2 */}
-          {isPlayer2 && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Select Winner {!game.player2_winner_selection && <span className="text-red-500">*</span>}
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: player2WinnerSelection === game.player1_id ? '#3b82f6' : '#e5e7eb' }}>
-                  <input
-                    type="radio"
-                    name="player2_winner"
-                    value={game.player1_id}
-                    checked={player2WinnerSelection === game.player1_id}
-                    onChange={(e) => setPlayer2WinnerSelection(e.target.value)}
-                    className="mr-3 w-5 h-5 text-blue-600"
-                  />
-                  <div className="flex-1 font-semibold text-gray-900 dark:text-white">{getDisplayName(player1)}</div>
-                </label>
-                <label className="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition" style={{ borderColor: player2WinnerSelection === game.player2_id ? '#3b82f6' : '#e5e7eb' }}>
-                  <input
-                    type="radio"
-                    name="player2_winner"
-                    value={game.player2_id}
-                    checked={player2WinnerSelection === game.player2_id}
-                    onChange={(e) => setPlayer2WinnerSelection(e.target.value)}
-                    className="mr-3 w-5 h-5 text-blue-600"
-                  />
-                  <div className="flex-1 font-semibold text-gray-900 dark:text-white">{getDisplayName(player2)}</div>
-                </label>
-              </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {game.player1_result_image_url && game.player1_damage_points !== null
-                  ? 'Required: Select who won the game to complete the game.'
-                  : 'Select who won this game.'}
-              </p>
-            </div>
-          )}
         </div>
-      </div>
+      </Card>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
-        <button
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button
           type="submit"
           disabled={loading || uploading || (isPlayer1 && !player1ImageFile && !game.player1_result_image_url) || (isPlayer2 && !player2ImageFile && !game.player2_result_image_url)}
-          className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 sm:py-2 px-6 rounded-lg transition text-sm sm:text-base"
+          className="flex-1"
+          size="lg"
         >
           {loading || uploading ? 'Saving...' : (() => {
-            // Check if game is ready to complete
             const hasP1Image = (isPlayer1 && (player1ImageFile || game.player1_result_image_url)) || (!isPlayer1 && game.player1_result_image_url);
             const hasP2Image = (isPlayer2 && (player2ImageFile || game.player2_result_image_url)) || (!isPlayer2 && game.player2_result_image_url);
             const hasP1Damage = (isPlayer1 && player1DamagePoints.trim() !== '') || (!isPlayer1 && game.player1_damage_points !== null);
@@ -616,14 +599,37 @@ export default function SaveGameForm({ game, seasonId }: SaveGameFormProps) {
             }
             return 'Save My Results';
           })()}
-        </button>
-        <Link
-          href={`/seasons/${seasonId}`}
-          className="w-full sm:flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2.5 sm:py-2 px-6 rounded-lg transition text-center text-sm sm:text-base"
-        >
-          Cancel
+        </Button>
+        <Link href={`/seasons/${seasonId}`} className="flex-1">
+          <Button type="button" variant="outline" className="w-full" size="lg">
+            Cancel
+          </Button>
         </Link>
       </div>
+
+      {/* Image Modal */}
+      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto p-0 bg-transparent border-none shadow-none">
+          <div className="relative flex items-center justify-center p-2">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Screenshot preview"
+                className="max-h-[90vh] max-w-[90vw] w-auto h-auto rounded-lg shadow-2xl object-contain"
+              />
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 bg-black/70 hover:bg-black/90 text-white rounded-full z-10 h-8 w-8"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 }
