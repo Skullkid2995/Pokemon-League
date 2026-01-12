@@ -34,20 +34,7 @@ export default async function EditGamePage({
     .eq('id', params.id)
     .single();
 
-  return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href={`/seasons/${params.id}`}
-          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4 inline-block"
-        >
-          ← Back to {season?.name || 'Season'}
-        </Link>
-        <h1 className="text-4xl font-bold mb-8">Edit Game</h1>
-        <GameForm game={game} seasonId={params.id} />
-      </div>
-    </div>
-  );
+  return <GameForm game={game} seasonId={params.id} />;
 }
 
 

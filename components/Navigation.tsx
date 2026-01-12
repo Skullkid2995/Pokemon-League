@@ -4,231 +4,171 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getDisplayName } from '@/lib/utils/display';
 import ThemeToggle from './ThemeToggle';
+import SideMenu from './layout/SideMenu';
+import MatchMenu from './layout/MatchMenu';
+import GameSelectorDropdown from './layout/GameSelectorDropdown';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-export default function Navigation() {
+interface NavigationProps {
+  initialUser?: any;
+  initialUserData?: any;
+  initialUserRole?: 'super_admin' | 'player' | null;
+}
+
+export default function Navigation({ 
+  initialUser = null, 
+  initialUserData = null, 
+  initialUserRole = null 
+}: NavigationProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
-  const [userData, setUserData] = useState<any>(null);
-  const [userRole, setUserRole] = useState<'super_admin' | 'player' | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(initialUser);
+  const [userData, setUserData] = useState<any>(initialUserData);
+  const [userRole, setUserRole] = useState<'super_admin' | 'player' | null>(initialUserRole);
+  const [loading, setLoading] = useState(false); // Already have initial data
+  const [sideMenuOpen, setSideMenuOpen] = useState(true); // Abierto por defecto en desktop
+  const [sideMenuCollapsed, setSideMenuCollapsed] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [navVisible, setNavVisible] = useState(true);
 
+  // Only fetch if we don't have initial data (for auth state changes)
   useEffect(() => {
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    async function syncUser() {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      if (user) {
-        // Get user role and profile data (nickname, name)
-        const { data: userProfile } = await supabase
-          .from('users')
-          .select('id, role, nickname, name')
-          .eq('auth_user_id', user.id)
-          .single();
+      // Only update if user state changed
+      if (currentUser?.id !== user?.id) {
+        setUser(currentUser);
         
-        if (userProfile) {
-          setUserData(userProfile);
-          setUserRole(userProfile.role || null);
+        if (currentUser && !userData) {
+          const { data: userProfile } = await supabase
+            .from('users')
+            .select('id, role, nickname, name')
+            .eq('auth_user_id', currentUser.id)
+            .single();
+          
+          if (userProfile) {
+            setUserData(userProfile);
+            setUserRole(userProfile.role || null);
+          }
+        } else if (!currentUser) {
+          setUserData(null);
+          setUserRole(null);
         }
       }
+    }
+    
+    // Check auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncUser();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, user?.id, userData]);
+
+  // Scroll interaction
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
       
-      setLoading(false);
-    }
-    getUser();
-  }, [supabase]);
+      setIsScrolled(currentScrollY > 10);
+      
+      // Hide/show navbar on scroll
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setNavVisible(false);
+      } else {
+        setNavVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
-  };
-
-  const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/users', label: 'Users' },
-    { href: '/seasons', label: 'Seasons' },
-    { href: '/rankings', label: 'Rankings' },
-    { href: '/audit-logs', label: 'Audit Logs', adminOnly: true },
-  ];
-
-  const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/';
-    }
-    return pathname.startsWith(href);
-  };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   return (
-    <nav className="tcg-gradient-primary shadow-lg border-b-4 border-yellow-400 dark:border-yellow-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-xl sm:text-2xl font-bold text-white hover:text-yellow-300 transition-colors flex items-center gap-2">
+    <>
+      <nav
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 tcg-gradient-primary shadow-lg border-b-4 border-yellow-400 dark:border-yellow-500 transition-transform duration-300",
+          navVisible ? "translate-y-0" : "-translate-y-full"
+        )}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Left side - Logo and Menu button */}
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSideMenuOpen(!sideMenuOpen)}
+                className="text-white hover:bg-white/10 lg:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              
+              <Link 
+                href="/" 
+                className="text-xl sm:text-2xl font-bold text-white hover:text-yellow-300 transition-colors flex items-center gap-2"
+              >
                 <svg 
-                  className="w-8 h-8 sm:w-10 sm:h-10" 
+                  className="w-6 h-6 sm:w-7 sm:h-7" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path 
-                    d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" 
+                    d="M5 16L3 5L8.5 12L12 5L15.5 12L21 5L19 16H5Z" 
                     fill="#FFCB05"
                     stroke="#FFB700"
                     strokeWidth="1.5"
                     strokeLinejoin="round"
                   />
+                  <circle cx="12" cy="19" r="3" fill="#FFCB05" stroke="#FFB700" strokeWidth="1.5"/>
                 </svg>
-                <span>TCG Pocket League</span>
+                <span>Gamer God</span>
               </Link>
             </div>
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
-              {navItems.map((item) => {
-                // Hide admin-only items for non-admins
-                if (item.adminOnly && userRole !== 'super_admin') {
-                  return null;
-                }
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`inline-flex items-center px-3 pt-1 pb-1 border-b-2 text-sm font-medium transition-all rounded-t-lg ${
-                      isActive(item.href)
-                        ? 'border-yellow-400 text-white font-semibold bg-white/10'
-                        : 'border-transparent text-white/90 hover:text-white hover:border-yellow-300 hover:bg-white/5'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-          {!loading && (
-            <div className="hidden md:flex md:items-center gap-3">
-              {user ? (
-                <>
-                  <ThemeToggle />
-                  <div className="flex items-center gap-3 lg:gap-4">
-                    <span className="text-xs lg:text-sm text-white/90 font-medium truncate max-w-[120px] lg:max-w-none">
-                      {userData ? getDisplayName(userData) : user.email}
-                    </span>
-                    <Link
-                      href="/change-password"
-                      className="text-xs lg:text-sm text-white/80 hover:text-white transition-colors"
-                    >
-                      Change Password
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="bg-yellow-400 hover:bg-yellow-300 text-purple-700 px-4 py-2 rounded-lg text-xs lg:text-sm font-bold transition-colors shadow-md hover:shadow-lg"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <ThemeToggle />
-                  <Link
-                    href="/login"
-                    className="bg-yellow-400 hover:bg-yellow-300 text-purple-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-md hover:shadow-lg"
-                  >
-                    Login
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-yellow-400"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              {!mobileMenuOpen ? (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              ) : (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="pt-2 pb-3 space-y-1 border-t-2 border-yellow-400 bg-purple-900/30">
-            {navItems.map((item) => {
-              // Hide admin-only items for non-admins
-              if (item.adminOnly && userRole !== 'super_admin') {
-                return null;
-              }
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-yellow-400/20 border-yellow-400 text-white font-semibold'
-                      : 'border-transparent text-white/90 hover:bg-white/10 hover:border-yellow-300 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-            {!loading && user && (
-              <>
-                <div className="flex items-center justify-between px-3 py-2 border-t-2 border-yellow-400/30 my-1">
-                  <div className="text-xs font-semibold text-white/90">
-                    {userData ? getDisplayName(userData) : user.email}
-                  </div>
-                  <ThemeToggle />
-                </div>
-                <Link
-                  href="/change-password"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-white/90 hover:bg-white/10 hover:border-yellow-300 hover:text-white transition-colors"
-                >
-                  Change Password
-                </Link>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="block w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-white/90 hover:bg-white/10 hover:border-yellow-300 hover:text-white transition-colors"
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
-            {!loading && !user && (
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-white/90 hover:bg-white/10 hover:border-yellow-300 hover:text-white transition-colors"
-              >
-                Login
-              </Link>
+            {/* Center - Match and Game Selector */}
+            <div className="flex items-center gap-3">
+              <MatchMenu />
+              <GameSelectorDropdown />
+            </div>
+
+            {/* Right side - Theme Toggle only */}
+            {!loading && (
+              <div className="flex items-center">
+                <ThemeToggle />
+              </div>
             )}
           </div>
         </div>
-      )}
-    </nav>
+      </nav>
+
+      {/* Side Menu */}
+      <SideMenu 
+        isOpen={sideMenuOpen} 
+        onClose={() => setSideMenuOpen(false)}
+        userRole={userRole}
+        user={user}
+        userData={userData}
+        onToggleCollapse={setSideMenuCollapsed}
+        onLogout={async () => {
+          await supabase.auth.signOut();
+          router.push('/login');
+          router.refresh();
+        }}
+      />
+
+      {/* Spacer for fixed nav and sidebar on desktop */}
+      <div className={cn("h-16 transition-all duration-300", sideMenuCollapsed ? "lg:ml-16" : "lg:ml-64")} />
+    </>
   );
 }
-

@@ -1,9 +1,11 @@
 import { User } from '@/lib/types/database';
 
+type UserLike = Pick<User, 'name' | 'nickname'> | null | undefined;
+
 /**
  * Get the display name for a user (nickname if available, otherwise full name)
  */
-export function getDisplayName(user: User | null | undefined): string {
+export function getDisplayName(user: UserLike): string {
   if (!user) return 'Unknown';
   return user.nickname || user.name;
 }

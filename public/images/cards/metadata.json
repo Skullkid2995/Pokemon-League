@@ -1,0 +1,22 @@
+{
+  "lastUpdate": "2026-01-10T04:40:40.599Z",
+  "totalCards": 3,
+  "source": "https://www.pokemon-zone.com/cards/",
+  "cards": [
+    {
+      "name": "Pokémon Zone logo",
+      "filename": "pok_mon_zone_logo_1768020036246_logo.svg",
+      "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo.svg"
+    },
+    {
+      "name": "Pokémon Zone logo",
+      "filename": "pok_mon_zone_logo_1768020036246_logo-mobile.svg",
+      "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo-mobile.svg"
+    },
+    {
+      "name": "Pokémon Zone logo",
+      "filename": "pok_mon_zone_logo_1768020036246_logo.svg",
+      "url": "https://assets.pokemon-zone.com/frontend/site-images/site/logo.svg"
+    }
+  ]
+}

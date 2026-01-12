@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Season } from '@/lib/types/database';
 import { getCurrentUserRole } from '@/lib/utils/auth';
+import SeasonEditButton from '@/components/seasons/SeasonEditButton';
 
 export default async function SeasonsPage() {
   const supabase = await createClient();
@@ -67,55 +68,85 @@ export default async function SeasonsPage() {
         )}
 
         {seasons && seasons.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {seasons.map((season: Season) => (
-              <div
-                key={season.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {season.name}
-                  </h2>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
-                      season.status
-                    )}`}
-                  >
-                    {season.status}
-                  </span>
-                </div>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>
-                    <span className="font-semibold">Year:</span> {season.year}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Start:</span>{' '}
-                    {new Date(season.start_date).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="font-semibold">End:</span>{' '}
-                    {new Date(season.end_date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                  <Link
-                    href={season.status === 'completed' ? `/seasons/${season.id}/results` : `/seasons/${season.id}`}
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-sm"
-                  >
-                    {season.status === 'completed' ? 'View Results →' : 'View Games →'}
-                  </Link>
-                  {isSuperAdmin && season.status !== 'completed' && (
-                    <Link
-                      href={`/seasons/${season.id}/edit`}
-                      className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
-                    >
-                      Edit
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {seasons.map((season: Season) => {
+              // Get gradient based on status
+              const getGradient = (status: string) => {
+                switch (status) {
+                  case 'active':
+                    return 'from-green-500/20 via-emerald-500/10 to-teal-500/20';
+                  case 'completed':
+                    return 'from-gray-500/20 via-slate-500/10 to-zinc-500/20';
+                  case 'upcoming':
+                    return 'from-blue-500/20 via-cyan-500/10 to-sky-500/20';
+                  default:
+                    return 'from-gray-500/20 via-slate-500/10 to-zinc-500/20';
+                }
+              };
+
+              return (
+                <Link
+                  key={season.id}
+                  href={season.status === 'completed' ? `/seasons/${season.id}/results` : `/seasons/${season.id}`}
+                  className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 block"
+                >
+                  {/* Background Gradient */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(season.status)}`} />
+                  
+                  {/* Luxury Ball Background - Corner */}
+                  <div className="absolute -bottom-8 -right-8 w-40 h-40 opacity-130 group-hover:opacity-10 transition-opacity duration-300">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/Lujo_Ball_(Ilustración).png"
+                      alt="Luxury Ball"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative p-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-[2px]">
+                    <div className="flex justify-between items-start mb-4">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                        {season.name}
+                      </h2>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(
+                          season.status
+                        )} shadow-sm`}
+                      >
+                        {season.status}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="flex items-center gap-2">
+                        <span className="font-semibold">Year:</span> 
+                        <span className="text-gray-900 dark:text-white">{season.year}</span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="font-semibold">Start:</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {new Date(season.start_date).toLocaleDateString()}
+                        </span>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="font-semibold">End:</span>
+                        <span className="text-gray-900 dark:text-white">
+                          {new Date(season.end_date).toLocaleDateString()}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center">
+                      <span className="text-primary font-semibold text-sm group-hover:underline">
+                        {season.status === 'completed' ? 'View Results →' : 'View Games →'}
+                      </span>
+                      {isSuperAdmin && season.status !== 'completed' && (
+                        <SeasonEditButton seasonId={season.id} />
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

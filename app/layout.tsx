@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
+import NavigationWrapper from "@/components/NavigationWrapper";
 import ThemeProvider from "@/components/ThemeProvider";
+import { GameProvider } from "@/components/layout/GameSelectorDropdown";
 
 export const metadata: Metadata = {
-  title: "TCG Pocket League",
-  description: "Pokemon TCG Pocket League - Track your trading card game matches and tournaments",
+  title: "GG",
+  description: "GG - Multi-game competitive platform. Track your matches and tournaments across multiple games",
 };
 
 export default function RootLayout({
@@ -17,8 +18,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <Navigation />
-          {children}
+          <GameProvider>
+            <NavigationWrapper />
+            {children}
+          </GameProvider>
         </ThemeProvider>
       </body>
     </html>
